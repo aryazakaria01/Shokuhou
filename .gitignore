@@ -3,3 +3,4 @@ logs/
 config/config.toml
 *.pyc
 __pycache__/
+.idea/
