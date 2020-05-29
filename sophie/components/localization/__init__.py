@@ -15,37 +15,22 @@
 #
 # This file is part of Sophie.
 
-
-stages:
-  - test
-  - release
-
-variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
+from sophie.utils.loader import log
 
 
-python:flake8:
-  image: python:latest
-  stage: test
-  allow_failure: true
-  before_script:
-    - pip install flake8 pyflakes
-  script:
-    - cd /builds/SophieBot/sophie/
-    - python3 -m flake8 sophie --max-line-length=120
+async def __setup__():
+    from .loader import load_all_languages
+    from .overwrite import __setup__ as overwrite
+    from .db import __setup__ as database
 
+    log.debug('Loading localizations...')
+    load_all_languages()
+    log.debug('...Done!')
 
-docker:
-  image: docker:latest
-  stage: release
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
-  script:
-    - docker build --pull -t "$DOCKER_IMAGE" .
-    - docker push "registry.gitlab.com/sophiebot/sophie:$CI_COMMIT_BRANCH"
-  only:
-    - master
-    - unstable
-    - v3
+    log.debug('Loading database...')
+    database()
+    log.debug('...Done!')
+
+    log.debug('Overwriting strings util...')
+    overwrite()
+    log.debug('...Done!')

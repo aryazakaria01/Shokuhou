@@ -15,37 +15,21 @@
 #
 # This file is part of Sophie.
 
+from aiogram.dispatcher.handler import MessageHandler
+from magic_filter import F
 
-stages:
-  - test
-  - release
+from .. import router
 
-variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
-
-
-python:flake8:
-  image: python:latest
-  stage: test
-  allow_failure: true
-  before_script:
-    - pip install flake8 pyflakes
-  script:
-    - cd /builds/SophieBot/sophie/
-    - python3 -m flake8 sophie --max-line-length=120
+from sophie.modules.utils.strings import apply_strings_dec
+from sophie.components.localization.locale import get_chat_locale
 
 
-docker:
-  image: docker:latest
-  stage: release
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
-  script:
-    - docker build --pull -t "$DOCKER_IMAGE" .
-    - docker push "registry.gitlab.com/sophiebot/sophie:$CI_COMMIT_BRANCH"
-  only:
-    - master
-    - unstable
-    - v3
+@router.message(commands=['lang'])
+@apply_strings_dec('locale')
+class GetLanguageMenu(MessageHandler):
+
+    def get_locale(self, chat_id):
+        return get_chat_locale(chat_id)
+
+    async def handle(self):
+        print(self.get_locale(self.chat.id))

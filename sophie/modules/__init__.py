@@ -15,37 +15,36 @@
 #
 # This file is part of Sophie.
 
+import os
 
-stages:
-  - test
-  - release
+from sophie.utils.logging import log
 
-variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
-
-
-python:flake8:
-  image: python:latest
-  stage: test
-  allow_failure: true
-  before_script:
-    - pip install flake8 pyflakes
-  script:
-    - cd /builds/SophieBot/sophie/
-    - python3 -m flake8 sophie --max-line-length=120
+LOADED_MODULES = {}
+NOT_LOADED_MODULES = []
 
 
-docker:
-  image: docker:latest
-  stage: release
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
-  script:
-    - docker build --pull -t "$DOCKER_IMAGE" .
-    - docker push "registry.gitlab.com/sophiebot/sophie:$CI_COMMIT_BRANCH"
-  only:
-    - master
-    - unstable
-    - v3
+def list_all_modules():
+    modules_directory = 'sophie/modules'
+
+    all_modules = []
+    for dir in os.listdir(modules_directory):
+        path = modules_directory + '/' + dir
+        if not os.path.isdir(path):
+            continue
+
+        if dir == '__pycache__':
+            continue
+
+        if not os.path.isfile(path + '/version.txt'):
+            continue
+
+        if dir in all_modules:
+            log.critical("Modules with same name can't exists!")
+            exit(5)
+
+        all_modules.append(dir)
+    return all_modules
+
+
+ALL_MODULES = sorted(list_all_modules())
+__all__ = ALL_MODULES + ["ALL_MODULES"]

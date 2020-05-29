@@ -15,24 +15,35 @@
 #
 # This file is part of Sophie.
 
-# Build image
-FROM python:3-slim AS compile-image
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends build-essential gcc
-RUN apt-get install -y git
+import os
 
-COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+from sophie.utils.logging import log
+
+LOADED_COMPONENTS = {}
 
 
-# Run image
-FROM python:3-slim AS run-image
+def list_all_components():
+    components_directory = 'sophie/components'
 
-COPY --from=compile-image /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+    all_components = []
+    for dir in os.listdir(components_directory):
+        path = components_directory + '/' + dir
+        if not os.path.isdir(path):
+            continue
 
-ADD . /sophie
-RUN rm -rf /sophie/data/
-WORKDIR /sophie
+        if dir == '__pycache__':
+            continue
 
-CMD [ "python", "-m", "sophie" ]
+        if not os.path.isfile(path + '/version.txt'):
+            continue
+
+        if dir in all_components:
+            log.critical("Components with same name can't exists!")
+            exit(5)
+
+        all_components.append(dir)
+    return all_components
+
+
+ALL_COMPONENTS = sorted(list_all_components())
+__all__ = ALL_COMPONENTS + ["ALL_COMPONENTS"]

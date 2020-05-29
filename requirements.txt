@@ -1,35 +1,19 @@
 # General
-telethon
-aiogram
+git+https://github.com/aiogram/aiogram@dev-3.x
 
-# DBs
+# DB
+pyarango
 redis
-aioredis # Redis memery storage fom aiogram
-pymongo
-motor
-dnspython # needed to connect to cloud MongoDB instances
 
 # Optional deps to make bot faster
 aiohttp[speedups]
 cryptg
 cryptography
-
-# Build uvloop from source, current pip version not compability with python3.8
-#git+https://github.com/python/cpython
-#git+https://github.com/MagicStack/uvloop
+uvloop
 
 # Other
-envparse
-hypercorn
-aiocron
-apscheduler
-requests
-#git+https://github.com/casics/nostril
-quart
-ujson
-PyYAML>5.0
+toml
+PyYAML
 coloredlogs
 loguru
-sentry_sdk
-babel
-captcha
+magic_filter
