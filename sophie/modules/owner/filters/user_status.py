@@ -36,7 +36,10 @@ class IsOP(BaseFilter):
     is_op: str
 
     async def __call__(self, message) -> bool:
+        owner_id = config('general/owner_id', require=True)
         operators = config('general/operators', default=[])
+
+        operators.append(owner_id)
         if message.from_user.id not in operators:
             return False
 
