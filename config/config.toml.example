@@ -1,0 +1,14 @@
+[general]
+token = '<token>'
+api_id = 00000
+api_hash = '<api hash>'
+owner_id = 000000000
+operators = [00000000]
+
+[advanced]
+debug = true
+uvloop = true
+
+[modules]
+load = []
+dont_load = []
