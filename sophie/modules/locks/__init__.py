@@ -23,5 +23,4 @@ router = Router()
 
 
 async def __setup__():
-    from .filters import __init__
     from .handlers import __init__
