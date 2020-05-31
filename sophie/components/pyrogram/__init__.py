@@ -16,4 +16,4 @@
 #
 # This file is part of Sophie.
 
-from .pyrogram import pyrogram
+from .pyrogram import pbot

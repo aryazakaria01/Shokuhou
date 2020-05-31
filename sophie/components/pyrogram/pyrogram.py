@@ -28,7 +28,7 @@ session_name = TOKEN.split(':')[0]
 API_ID = config('general/api_id', require=True)
 API_HASH = config('general/api_hash', require=True)
 
-pyrogram = Client(
+pbot = Client(
     session_name,
     api_id=API_ID,
     api_hash=API_HASH,
@@ -38,4 +38,4 @@ pyrogram = Client(
 log.debug('Starting 🔥 Pyrogram...')
 # disable logging for pyrogram [not for ERROR logging]
 logging.getLogger('pyrogram').setLevel(level=logging.ERROR)
-asyncio.ensure_future(pyrogram.start())
+asyncio.ensure_future(pbot.start())

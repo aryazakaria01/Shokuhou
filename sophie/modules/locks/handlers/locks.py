@@ -20,7 +20,7 @@ from aiogram.dispatcher.handler import MessageHandler
 from pyrogram import ChatPermissions
 
 from .. import router
-from sophie.components.pyrogram import pyrogram
+from sophie.components.pyrogram import pbot
 from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
 
@@ -67,12 +67,12 @@ class LocksModule:
         output, duplicate = await self.create_output(locktypes, action, chat_id)
         if output:
             new_permissions = await self.parse_output(output, chat_id)
-            await pyrogram.set_chat_permissions(chat_id, new_permissions)
+            await pbot.set_chat_permissions(chat_id, new_permissions)
         return duplicate
 
     @staticmethod
     async def get_current_permissions(chat_id):
-        return (await pyrogram.get_chat(chat_id)).permissions
+        return (await pbot.get_chat(chat_id)).permissions
 
     async def check_duplicate(self, locktype, action, chat_id):
         permissions = await self.get_current_permissions(chat_id)
@@ -143,7 +143,7 @@ class Lock(MessageHandler, LocksModule):
 
     async def lock_all(self):
         if not await self.check_duplicate('can_send_messages', False, self.chat.id):
-            await pyrogram.set_chat_permissions(self.chat.id, ChatPermissions())
+            await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
             return ['all'], [], []
         return [], [], ['all']
 
@@ -198,7 +198,7 @@ class Unlock(MessageHandler, LocksModule):
             if not await self.check_duplicate(locktype, True, self.chat.id):
                 locks.update({locktype: True})
         permissions = ChatPermissions(**locks)
-        await pyrogram.set_chat_permissions(self.chat.id, permissions)
+        await pbot.set_chat_permissions(self.chat.id, permissions)
         return ['all'], [], []
 
     async def handle(self):
