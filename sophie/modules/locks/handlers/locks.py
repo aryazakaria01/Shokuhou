@@ -20,7 +20,7 @@ from aiogram.dispatcher.handler import MessageHandler
 from pyrogram import ChatPermissions
 
 from .. import router
-from sophie.services.pyrogram import pyrogram
+from sophie.components.pyrogram import pyrogram
 from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
 

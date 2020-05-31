@@ -21,6 +21,7 @@ import logging
 
 from pyrogram import Client
 from sophie.config import config
+from sophie.utils.logging import log
 
 TOKEN = config('general/token', require=True)
 session_name = TOKEN.split(':')[0]
@@ -34,5 +35,7 @@ pyrogram = Client(
     bot_token=TOKEN
 )
 
-logging.debug('Starting 🔥 Pyrogram...')
-# TODO: Start pyrogram
+log.debug('Starting 🔥 Pyrogram...')
+# disable logging for pyrogram [not for ERROR logging]
+logging.getLogger('pyrogram').setLevel(level=logging.ERROR)
+asyncio.ensure_future(pyrogram.start())
