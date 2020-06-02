@@ -12,3 +12,8 @@ uvloop = true
 [modules]
 load = []
 dont_load = []
+
+[mongo]
+url =
+port =
+database = # Name

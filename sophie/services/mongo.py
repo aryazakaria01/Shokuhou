@@ -23,9 +23,11 @@ import sys
 from motor import motor_asyncio
 from pymongo.errors import ServerSelectionTimeoutError
 
-MONGO_URI = 'localhost'
-MONGO_PORT = 27017
-MONGO_DB = 'sophie'
+from sophie.config import config
+
+MONGO_URI = config('mongo/url', default='localhost')
+MONGO_PORT = config('mongo/port', default=27017)
+MONGO_DB = config('mongo/database', default='sophie')
 
 # Init MongoD
 motor = motor_asyncio.AsyncIOMotorClient(MONGO_URI, MONGO_PORT)
