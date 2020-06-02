@@ -115,15 +115,11 @@ class LocksModule:
 
     async def set_permission(self, locktypes, action, chat_id):
         output, duplicate = await self.create_output(locktypes, action, chat_id)
-        cache = dict()
         if output:
             new_permissions = await self.parse_output(output, chat_id)
             data = await pbot.set_chat_permissions(chat_id, new_permissions)
-            for perm in [perm for perm in dir(data.permissions) if not (perm.startswith('_')
-                                                                        or perm in ('bind', 'default'))]:
-                cache.update({perm: data.permissions[perm]})
             key = f'api_locks_{chat_id}'
-            redis.jsonset(key, Path.rootPath(), cache)
+            redis.jsonset(key, Path.rootPath(), vars(data.permissions))
             redis.expire(key, 1000)
         return duplicate
 
@@ -218,11 +214,8 @@ class Locks(MessageHandler, LocksModule):
                 return data[lock]
             else:
                 data = (await pbot.get_chat(self.chat.id)).permissions
-                cache = dict()
-                for perm in [perm for perm in dir(data) if not (perm.startswith('_') or perm in ('bind', 'default'))]:
-                    cache.update({perm: data[perm]})
                 key = f'api_locks_{self.chat.id}'
-                redis.jsonset(key, Path.rootPath(), cache)
+                redis.jsonset(key, Path.rootPath(), vars(data))
                 redis.expire(key, 1000)
                 return data[lock]
 
@@ -236,11 +229,8 @@ class Locks(MessageHandler, LocksModule):
             api = redis.jsonget(f'api_locks_{self.chat.id}')
             if api is None:
                 api = (await pbot.get_chat(self.chat.id)).permissions
-                cache = dict()
-                for perm in [perm for perm in dir(api) if not (perm.startswith('_') or perm in ('bind', 'default'))]:
-                    cache.update({perm: api[perm]})
                 key = f'api_locks_{self.chat.id}'
-                redis.jsonset(key, Path.rootPath(), cache)
+                redis.jsonset(key, Path.rootPath(), vars(api))
                 redis.expire(key, 1000)
             for lock in self.api_list().values():
                 if api[lock] is True:
@@ -297,14 +287,10 @@ class Lock(MessageHandler, LocksModule):
 
     async def lock_all(self):
         message = await self.event.answer('Locking...')
-        cache = dict()
         with suppress(ChatNotModified):
             data = await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
-            for perm in [perm for perm in dir(data.permissions) if not (perm.startswith('_')
-                                                                        or perm in ('bind', 'default'))]:
-                cache.update({perm: data.permissions[perm]})
             key = f'api_locks_{self.chat.id}'
-            redis.jsonset(key, Path.rootPath(), cache)
+            redis.jsonset(key, Path.rootPath(), vars(data.permissions))
             redis.expire(key, 1000)
         await self.db_lock(self.nonapi_list(), False, self.chat.id)
         await self.update_cache(self.chat.id)
@@ -371,12 +357,11 @@ class Unlock(MessageHandler, LocksModule):
             'can_send_polls': True,
             'can_add_web_page_previews': True
         }
-        cache = locks
         permissions = ChatPermissions(**locks)
         with suppress(ChatNotModified):
-            await pbot.set_chat_permissions(self.chat.id, permissions)
+            data = await pbot.set_chat_permissions(self.chat.id, permissions)
             key = f'api_locks_{self.chat.id}'
-            redis.jsonset(key, Path.rootPath(), cache)
+            redis.jsonset(key, Path.rootPath(), vars(data.permissions))
             redis.expire(key, 1000)
         await self.db_lock(self.nonapi_list(), True, self.chat.id)
         await self.update_cache(self.chat.id)
