@@ -17,11 +17,12 @@
 # This file is part of Sophie.
 
 import re
+from contextlib import suppress
 
 from aiogram.dispatcher.handler import MessageHandler
 from aiogram.api import types
 from pyrogram import ChatPermissions
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, ChatNotModified
 from rejson import Path
 
 from sophie.components.caching import redis
@@ -205,7 +206,7 @@ class LocksHandler(MessageHandler, LocksModule):
 @apply_strings_dec('locks')
 class Locks(MessageHandler, LocksModule):
     async def locktypes(self):
-        text = '<b>Available locktypes</b>\n'
+        text = '<b>Current lock settings:</b>\n'
         for lock in self.locks():
             text += f'- <code>{lock}</code> : {not await self.get_status(lock)}\n'
         return text
@@ -295,8 +296,9 @@ class Lock(MessageHandler, LocksModule):
         return text
 
     async def lock_all(self):
-        if not await self.check_duplicate('can_send_messages', False, self.chat.id):
-            cache = dict()
+        message = await self.event.answer('Locking...')
+        cache = dict()
+        with suppress(ChatNotModified):
             data = await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
             for perm in [perm for perm in dir(data.permissions) if not (perm.startswith('_')
                                                                         or perm in ('bind', 'default'))]:
@@ -304,16 +306,18 @@ class Lock(MessageHandler, LocksModule):
             key = f'api_locks_{self.chat.id}'
             redis.jsonset(key, Path.rootPath(), cache)
             redis.expire(key, 1000)
-            await self.db_lock(self.nonapi_list(), False, self.chat.id)
-            await self.update_cache(self.chat.id)
-            return ['all'], [], []
-        return [], [], ['all']
+        await self.db_lock(self.nonapi_list(), False, self.chat.id)
+        await self.update_cache(self.chat.id)
+        await self.bot.edit_message_text(f'Locked everything in <b>{self.chat.title}</b>',
+                                         self.chat.id, message.message_id, parse_mode="HTML")
+        return [], [], []
 
     async def handle(self):
         if get_args_list(self.event) == ['']:
             return
         text = await self.lock()
-        await self.event.answer(text)
+        if text:
+            await self.event.answer(text)
 
 
 @router.message(commands=['unlock'])
@@ -356,6 +360,7 @@ class Unlock(MessageHandler, LocksModule):
         return text
 
     async def unlock_all(self):
+        message = await self.event.answer('Unlocking...')
         locks = {
             'can_send_messages': True,
             'can_send_media_messages': True,
@@ -368,16 +373,20 @@ class Unlock(MessageHandler, LocksModule):
         }
         cache = locks
         permissions = ChatPermissions(**locks)
-        await pbot.set_chat_permissions(self.chat.id, permissions)
-        key = f'api_locks_{self.chat.id}'
-        redis.jsonset(key, Path.rootPath(), cache)
-        redis.expire(key, 1000)
+        with suppress(ChatNotModified):
+            await pbot.set_chat_permissions(self.chat.id, permissions)
+            key = f'api_locks_{self.chat.id}'
+            redis.jsonset(key, Path.rootPath(), cache)
+            redis.expire(key, 1000)
         await self.db_lock(self.nonapi_list(), True, self.chat.id)
         await self.update_cache(self.chat.id)
-        return ['all'], [], []
+        await self.bot.edit_message_text(f'Unlocked everything in <b>{self.chat.title}</b>!',
+                                         self.chat.id, message.message_id, parse_mode='HTML')
+        return [], [], []
 
     async def handle(self):
         if get_args_list(self.event) == ['']:
             return
         text = await self.lock()
-        await self.event.answer(text)
+        if text:
+            await self.event.answer(text)
