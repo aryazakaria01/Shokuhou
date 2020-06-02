@@ -16,69 +16,131 @@
 #
 # This file is part of Sophie.
 
-from aiogram.dispatcher.handler import MessageHandler
-from pyrogram import ChatPermissions
+import re
 
-from .. import router
+from aiogram.dispatcher.handler import MessageHandler
+from aiogram.api import types
+from pyrogram import ChatPermissions
+from pyrogram.errors import BadRequest
+from rejson import Path
+
+from sophie.components.caching import redis
+from .. import router, background_router
 from sophie.components.pyrogram import pbot
 from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
+from sophie.services.mongo import db
 
-# TODO: Add more locktypes, Use admin filter, Use arg filter
+# TODO: Use admin filter, Use arg filter
 
 
 class LocksModule:
 
-    @staticmethod
-    def list_locktypes():
-        types: dict = {
-            'can_send_messages': 'all',
-            'can_send_media_messages': 'media',
-            'can_send_stickers': 'stickers',
-            'can_send_animations': 'gif',
-            'can_send_games': 'games',
-            'can_use_inline_bots': 'bot',
-            'can_send_polls': 'polls'
-        }
-        return types
+    def locks(self):
+        api_list = list(self.api_list().keys())
+        non_api_list = self.nonapi_list()
+        return ['all'] + api_list + non_api_list
 
-    def handle_input(self, inputs: list):
+    @staticmethod
+    def api_list():
+        locktypes = {
+            'text': 'can_send_messages',
+            'media': 'can_send_media_messages',
+            'stickers': 'can_send_stickers',
+            'gif': 'can_send_animations',
+            'games': 'can_send_games',
+            'bot': 'can_use_inline_bots',
+            'polls': 'can_send_polls',
+            'preview': 'can_add_web_page_previews'
+        }
+        return locktypes
+
+    @staticmethod
+    def nonapi_list():
+        locktypes = [
+            'audio', 'button',
+            'command', 'contact',
+            'document', 'email',
+            'forward', 'invitelink',
+            'location', 'photo',
+            'url', 'video', 'voice'
+        ]
+        return locktypes
+
+    def handle_input(self, inputs):
         args_list: list = []
         failed_list: list = []
         for args in inputs:
-            if args in (self.list_locktypes()).values():
+            if args in self.locks():
                 args_list.append(args)
             else:
                 failed_list.append(args)
+
         return args_list, failed_list
 
-    async def create_output(self, args: list, action: bool, chat_id):
+    async def create_output(self, args, action, chat_id):
         output = dict()
         duplicate = list()
-        for locktype in self.list_locktypes().items():
-            if locktype[1] in (arg for arg in args):
-                if await self.check_duplicate(locktype[0], action, chat_id):
-                    duplicate.append(locktype[1])
+        for locktype in self.api_list().items():
+            if locktype[0] in (arg for arg in args):
+                args.remove(locktype[0])
+                if await self.check_duplicate(locktype[1], action, chat_id):
+                    duplicate.append(locktype[0])
                     continue
-                output[locktype[0]] = action
+                output[locktype[1]] = action
+
+        for arg in args:
+            if arg in self.nonapi_list():
+                if not await self.check_duplicate(arg, action, chat_id, api=False):
+                    await self.db_lock(arg, action, chat_id)
+                else:
+                    duplicate.append(arg)
         return output, duplicate
 
-    async def set_permission(self, locktypes: list, action: bool, chat_id):
+    @staticmethod
+    async def db_lock(locktype, action, chat_id):
+        if isinstance(locktype, list):
+            new = dict()
+            new['chat_id'] = chat_id
+            for i in locktype:
+                new[i] = action
+        else:
+            new = {'chat_id': chat_id, locktype: action}
+        await db.locks.update_one(
+            {'chat_id': chat_id},
+            {'$set': new},
+            upsert=True
+        )
+
+    async def set_permission(self, locktypes, action, chat_id):
         output, duplicate = await self.create_output(locktypes, action, chat_id)
+        cache = dict()
         if output:
             new_permissions = await self.parse_output(output, chat_id)
-            await pbot.set_chat_permissions(chat_id, new_permissions)
+            data = await pbot.set_chat_permissions(chat_id, new_permissions)
+            for perm in [perm for perm in dir(data.permissions) if not (perm.startswith('_')
+                                                                        or perm in ('bind', 'default'))]:
+                cache.update({perm: data.permissions[perm]})
+            key = f'api_locks_{chat_id}'
+            redis.jsonset(key, Path.rootPath(), cache)
+            redis.expire(key, 1000)
         return duplicate
 
     @staticmethod
     async def get_current_permissions(chat_id):
         return (await pbot.get_chat(chat_id)).permissions
 
-    async def check_duplicate(self, locktype, action, chat_id):
-        permissions = await self.get_current_permissions(chat_id)
-        if permissions[locktype] == action:
-            return True
+    async def check_duplicate(self, locktype, action, chat_id, api=True):
+        if api:
+            permissions = await self.get_current_permissions(chat_id)
+            if permissions[locktype] == action:
+                return True
+            else:
+                return False
         else:
+            current_settings = await db.locks.find_one({'chat_id': chat_id})
+            if current_settings is not None and locktype in current_settings:
+                return current_settings[locktype] == action
             return False
 
     async def parse_output(self, output, chat_id):
@@ -87,17 +149,107 @@ class LocksModule:
             permissions[new_permission[0]] = new_permission[1]
         return permissions
 
+    @staticmethod
+    async def update_cache(chat_id):
+        data = await db.locks.find_one({'chat_id': chat_id})
+        if data is not None:
+            del data['chat_id'], data['_id']
+            redis.jsonset(f'locks_{chat_id}', Path.rootPath(), data)
+            return data
+
+
+@background_router.message(content_types=types.message.ContentType.ANY)
+class LocksHandler(MessageHandler, LocksModule):
+
+    async def get_cache(self):
+        if data := redis.jsonget(f'locks_{self.chat.id}'):
+            return data
+        else:
+            return await self.update_cache(self.chat.id)
+
+    async def check_message(self):
+        data = await self.get_cache()
+        if data and self.event.text is not None:
+            for lock in data:
+                if data.get(lock) is False and hasattr(self.event, lock) and getattr(self.event, lock) is not None:
+                    return True
+
+            if self.event.entities is not None:
+                for entity in self.event.entities:
+                    if entity.type in data and data[entity.type] is False:
+                        return True
+
+            if 'invitelink' in data and data['invitelink'] is False:
+                invitelink = r'(https://|)(t.me/)(\w+)(/.+|)'
+                if data := re.search(invitelink, self.event.text):
+                    if (match := data.group(3)) != 'joinchat':
+                        try:
+                            chat = (await pbot.get_chat('@'+match)).type
+                        except BadRequest:
+                            pass
+                        else:
+                            return chat in ('supergroup', 'group')
+                    else:
+                        return True
+
+            if 'forward' in data and data['forward'] is False:
+                if (getattr(self.event, 'forward_from_chat') or getattr(self.event, 'forward_from')) is not None:
+                    return True
+
+    async def handle(self):
+        if await self.check_message():
+            await self.bot.delete_message(self.chat.id, self.event.message_id)
+
 
 @router.message(commands=['locks', 'locktypes'])
 @apply_strings_dec('locks')
 class Locks(MessageHandler, LocksModule):
     async def locktypes(self):
         text = '<b>Available locktypes</b>\n'
-        for lockype in self.list_locktypes().items():
-            current_permission = await self.get_current_permissions(self.chat.id)
-            status = not current_permission[lockype[0]]
-            text += f'- <code>{lockype[1]}</code> : {status}\n'
+        for lock in self.locks():
+            text += f'- <code>{lock}</code> : {not await self.get_status(lock)}\n'
         return text
+
+    async def get_status(self, lock):
+        if lock in self.api_list().keys():
+            lock = self.api_list().get(lock)
+            if data := redis.jsonget(f'api_locks_{self.chat.id}'):
+                return data[lock]
+            else:
+                data = (await pbot.get_chat(self.chat.id)).permissions
+                cache = dict()
+                for perm in [perm for perm in dir(data) if not (perm.startswith('_') or perm in ('bind', 'default'))]:
+                    cache.update({perm: data[perm]})
+                key = f'api_locks_{self.chat.id}'
+                redis.jsonset(key, Path.rootPath(), cache)
+                redis.expire(key, 1000)
+                return data[lock]
+
+        if lock in self.nonapi_list():
+            data = redis.jsonget(f'locks_{self.chat.id}')
+            if data is not None and lock in data:
+                return data[lock]
+            return True
+
+        if lock == 'all':
+            api = redis.jsonget(f'api_locks_{self.chat.id}')
+            if api is None:
+                api = (await pbot.get_chat(self.chat.id)).permissions
+                cache = dict()
+                for perm in [perm for perm in dir(api) if not (perm.startswith('_') or perm in ('bind', 'default'))]:
+                    cache.update({perm: api[perm]})
+                key = f'api_locks_{self.chat.id}'
+                redis.jsonset(key, Path.rootPath(), cache)
+                redis.expire(key, 1000)
+            for lock in self.api_list().values():
+                if api[lock] is True:
+                    return True
+            for lock in self.nonapi_list():
+                if lock not in (data := await db.locks.find_one({'chat_id': self.chat.id})):
+                    return True
+                if data[lock] is not False:
+                    return True
+            return False
 
     async def handle(self):
         await self.event.answer(await self.locktypes())
@@ -113,7 +265,8 @@ class Lock(MessageHandler, LocksModule):
         if 'all' in args:
             return await self.lock_all()
 
-        already_locked = await self.set_permission(args, False, chat)
+        already_locked = await self.set_permission(list(args), False, chat)
+        await self.update_cache(self.chat.id)
         return args, unknown_types, already_locked
 
     async def lock(self):
@@ -143,7 +296,16 @@ class Lock(MessageHandler, LocksModule):
 
     async def lock_all(self):
         if not await self.check_duplicate('can_send_messages', False, self.chat.id):
-            await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
+            cache = dict()
+            data = await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
+            for perm in [perm for perm in dir(data.permissions) if not (perm.startswith('_')
+                                                                        or perm in ('bind', 'default'))]:
+                cache.update({perm: data.permissions[perm]})
+            key = f'api_locks_{self.chat.id}'
+            redis.jsonset(key, Path.rootPath(), cache)
+            redis.expire(key, 1000)
+            await self.db_lock(self.nonapi_list(), False, self.chat.id)
+            await self.update_cache(self.chat.id)
             return ['all'], [], []
         return [], [], ['all']
 
@@ -164,7 +326,8 @@ class Unlock(MessageHandler, LocksModule):
         if 'all' in args:
             return await self.unlock_all()
 
-        already_unlocked = await self.set_permission(args, True, chat)
+        already_unlocked = await self.set_permission(list(args), True, chat)
+        await self.update_cache(self.chat.id)
         return args, unknown_types, already_unlocked
 
     async def lock(self):
@@ -193,12 +356,24 @@ class Unlock(MessageHandler, LocksModule):
         return text
 
     async def unlock_all(self):
-        locks = dict()
-        for locktype in self.list_locktypes().keys():
-            if not await self.check_duplicate(locktype, True, self.chat.id):
-                locks.update({locktype: True})
+        locks = {
+            'can_send_messages': True,
+            'can_send_media_messages': True,
+            'can_send_stickers': True,
+            'can_send_animations': True,
+            'can_send_games': True,
+            'can_use_inline_bots': True,
+            'can_send_polls': True,
+            'can_add_web_page_previews': True
+        }
+        cache = locks
         permissions = ChatPermissions(**locks)
         await pbot.set_chat_permissions(self.chat.id, permissions)
+        key = f'api_locks_{self.chat.id}'
+        redis.jsonset(key, Path.rootPath(), cache)
+        redis.expire(key, 1000)
+        await self.db_lock(self.nonapi_list(), True, self.chat.id)
+        await self.update_cache(self.chat.id)
         return ['all'], [], []
 
     async def handle(self):
