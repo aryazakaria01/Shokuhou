@@ -21,6 +21,7 @@ from contextlib import suppress
 
 from aiogram.dispatcher.handler import MessageHandler
 from aiogram.api import types
+from aiogram.utils.exceptions import TelegramAPIError
 from pyrogram import ChatPermissions
 from pyrogram.errors import BadRequest, ChatNotModified
 from rejson import Path
@@ -64,7 +65,8 @@ class LocksModule:
             'document', 'email',
             'forward', 'invitelink',
             'location', 'photo',
-            'url', 'video', 'voice'
+            'url', 'video',
+            'emojigames', 'voice'
         ]
         return locktypes
 
@@ -98,20 +100,28 @@ class LocksModule:
                     duplicate.append(arg)
         return output, duplicate
 
-    @staticmethod
-    async def db_lock(locktype, action, chat_id):
+    shorts = {
+        'emojigames': 'dice',
+    }
+
+    async def db_lock(self, locktype, action, chat_id):
         if isinstance(locktype, list):
             new = dict()
             new['chat_id'] = chat_id
-            for i in locktype:
-                new[i] = action
+            for lock in locktype:
+                if lock in self.shorts.keys():
+                    lock = self.shorts.get(lock)
+                new[lock] = action
         else:
+            if locktype in self.shorts.keys():
+                locktype = self.shorts.get(locktype)
             new = {'chat_id': chat_id, locktype: action}
         await db.locks.update_one(
             {'chat_id': chat_id},
             {'$set': new},
             upsert=True
         )
+        await self.update_cache(chat_id)
 
     async def set_permission(self, locktypes, action, chat_id):
         output, duplicate = await self.create_output(locktypes, action, chat_id)
@@ -135,6 +145,8 @@ class LocksModule:
             else:
                 return False
         else:
+            if locktype in self.shorts:
+                locktype = self.shorts.get(locktype)
             current_settings = await db.locks.find_one({'chat_id': chat_id})
             if current_settings is not None and locktype in current_settings:
                 return current_settings[locktype] == action
@@ -166,7 +178,7 @@ class LocksHandler(MessageHandler, LocksModule):
 
     async def check_message(self):
         data = await self.get_cache()
-        if data and self.event.text is not None:
+        if data is not None:
             for lock in data:
                 if data.get(lock) is False and hasattr(self.event, lock) and getattr(self.event, lock) is not None:
                     return True
@@ -176,18 +188,19 @@ class LocksHandler(MessageHandler, LocksModule):
                     if entity.type in data and data[entity.type] is False:
                         return True
 
-            if 'invitelink' in data and data['invitelink'] is False:
-                invitelink = r'(https://|)(t.me/)(\w+)(/.+|)'
-                if data := re.search(invitelink, self.event.text):
-                    if (match := data.group(3)) != 'joinchat':
-                        try:
-                            chat = (await pbot.get_chat('@'+match)).type
-                        except BadRequest:
-                            pass
+            if self.event.text:
+                if 'invitelink' in data and data['invitelink'] is False:
+                    invitelink = r'(https://|)(t.me/)(\w+)(/.+|)'
+                    if data := re.search(invitelink, self.event.text):
+                        if (match := data.group(3)) != 'joinchat':
+                            try:
+                                chat = (await pbot.get_chat('@'+match)).type
+                            except BadRequest:
+                                pass
+                            else:
+                                return chat in ('supergroup', 'group')
                         else:
-                            return chat in ('supergroup', 'group')
-                    else:
-                        return True
+                            return True
 
             if 'forward' in data and data['forward'] is False:
                 if (getattr(self.event, 'forward_from_chat') or getattr(self.event, 'forward_from')) is not None:
@@ -198,10 +211,20 @@ class LocksHandler(MessageHandler, LocksModule):
             await self.bot.delete_message(self.chat.id, self.event.message_id)
 
 
-@router.message(commands=['locks', 'locktypes'])
+@router.message(commands=['locks', 'locktypes', 'locked'], user_admin=True)
 @apply_strings_dec('locks')
 class Locks(MessageHandler, LocksModule):
     async def locktypes(self):
+        if self.data['command'].command == 'locked':
+            text = '<b>Currently locked types:</b>\n'
+            count = 0
+            for lock in self.locks():
+                if not await self.get_status(lock):
+                    count += 1
+                    text += f'- <code>{lock}</code>\n'
+            if count < 1:
+                text = 'Nothing is locked here!'
+            return text
         text = '<b>Current lock settings:</b>\n'
         for lock in self.locks():
             text += f'- <code>{lock}</code> : {not await self.get_status(lock)}\n'
@@ -243,7 +266,11 @@ class Locks(MessageHandler, LocksModule):
             return False
 
     async def handle(self):
-        await self.event.answer(await self.locktypes())
+        try:
+            message = await self.event.reply('Fetching...')
+        except TelegramAPIError:
+            message = await self.event.answer('Fetching...')
+        await self.bot.edit_message_text(await self.locktypes(), self.chat.id, message.message_id, parse_mode='HTML')
 
 
 @router.message(commands=['lock'])
@@ -286,7 +313,6 @@ class Lock(MessageHandler, LocksModule):
         return text
 
     async def lock_all(self):
-        message = await self.event.answer('Locking...')
         with suppress(ChatNotModified):
             data = await pbot.set_chat_permissions(self.chat.id, ChatPermissions())
             key = f'api_locks_{self.chat.id}'
@@ -295,15 +321,19 @@ class Lock(MessageHandler, LocksModule):
         await self.db_lock(self.nonapi_list(), False, self.chat.id)
         await self.update_cache(self.chat.id)
         await self.bot.edit_message_text(f'Locked everything in <b>{self.chat.title}</b>',
-                                         self.chat.id, message.message_id, parse_mode="HTML")
+                                         self.chat.id, self.message.message_id, parse_mode="HTML")
         return [], [], []
 
     async def handle(self):
+        try:
+            self.message = await self.event.reply('Locking...')
+        except TelegramAPIError:
+            self.message = await self.event.answer('Locking...')
         if get_args_list(self.event) == ['']:
             return
         text = await self.lock()
         if text:
-            await self.event.answer(text)
+            await self.bot.edit_message_text(text, self.chat.id, self.message.message_id, parse_mode='HTML')
 
 
 @router.message(commands=['unlock'])
@@ -320,7 +350,7 @@ class Unlock(MessageHandler, LocksModule):
         await self.update_cache(self.chat.id)
         return args, unknown_types, already_unlocked
 
-    async def lock(self):
+    async def unlock(self):
         text = str()
         args, utypes, already_unlocked = await self.parse()
         for lock in already_unlocked:
@@ -346,7 +376,6 @@ class Unlock(MessageHandler, LocksModule):
         return text
 
     async def unlock_all(self):
-        message = await self.event.answer('Unlocking...')
         locks = {
             'can_send_messages': True,
             'can_send_media_messages': True,
@@ -366,12 +395,16 @@ class Unlock(MessageHandler, LocksModule):
         await self.db_lock(self.nonapi_list(), True, self.chat.id)
         await self.update_cache(self.chat.id)
         await self.bot.edit_message_text(f'Unlocked everything in <b>{self.chat.title}</b>!',
-                                         self.chat.id, message.message_id, parse_mode='HTML')
+                                         self.chat.id, self.message.message_id, parse_mode='HTML')
         return [], [], []
 
     async def handle(self):
+        try:
+            self.message = await self.event.reply('Unlocking...')
+        except TelegramAPIError:
+            self.message = await self.event.answer('Unlocking...')
         if get_args_list(self.event) == ['']:
             return
-        text = await self.lock()
+        text = await self.unlock()
         if text:
-            await self.event.answer(text)
+            await self.bot.edit_message_text(text, self.chat.id, self.message.message_id, parse_mode='HTML')
