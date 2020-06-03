@@ -16,20 +16,17 @@
 # This file is part of Sophie.
 
 from aiogram.dispatcher.handler import MessageHandler
-from magic_filter import F
+from aiogram.api.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from .. import router
 
-from sophie.modules.utils.strings import apply_strings_dec
-from sophie.components.localization.locale import get_chat_locale
+from sophie.components.localization.locale import get_chat_locale, set_chat_locale, get_languages_list
 
 
 @router.message(commands=['lang'])
-@apply_strings_dec('locale')
 class GetLanguageMenu(MessageHandler):
-
-    def get_locale(self, chat_id):
-        return get_chat_locale(chat_id)
-
     async def handle(self):
-        print(self.get_locale(self.chat.id))
+        chat_id = self.chat.id
+        language = await get_chat_locale(chat_id)
+        await self.event.reply(language)
+

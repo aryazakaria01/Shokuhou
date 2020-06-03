@@ -14,18 +14,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # This file is part of Sophie.
-
-from aiogram.dispatcher.middlewares.base import BaseMiddleware
-
-
-class MessageDataMiddleware(BaseMiddleware):
-    async def on_pre_process_update(self, update, data):
-        message = update.message
-        message.__config__.allow_mutation = True
-        setattr(message, 'd', {})
-
-
-def __setup__():
-    from sophie.services.aiogram import dp
-
-    dp.middleware.setup(MessageDataMiddleware())
+#

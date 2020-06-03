@@ -15,22 +15,8 @@
 #
 # This file is part of Sophie.
 
-from pyArango.connection import Connection
-from pyArango.database import Database
-
-from sophie.config import config
-from sophie.utils.logging import log
-
-
-log.debug('Enabling ArangoDB...')
-
-arango = Connection(
-    arangoURL=config('arangodb/url', default='http://127.0.0.1:8529'),
-    username=config('arangodb/user', default='sophie'),
-    password=config('arangodb/password', require=True)
-)
-
-db_name = config('arangodb/db', default='sophie')
-db = Database(arango, db_name)
-log.debug('...Done!')
-
+# Language info
+# NOTE: Write here data for your your language
+# NOTE: Use English name for your language, like 'Russian', instead of 'Русский'
+language_name: 'English'
+language_flag: '🇬🇧'

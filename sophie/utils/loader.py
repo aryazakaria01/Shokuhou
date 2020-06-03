@@ -23,7 +23,8 @@ import subprocess
 from importlib import import_module
 
 from sophie.utils.logging import log
-from sophie.config import config
+
+from sophie.utils.config import config
 
 
 def get_installed_packages():
@@ -69,6 +70,9 @@ def check_requirements(f):
         if requirement.startswith('?'):
             # TODO: Support optional requirements
             continue
+
+        if '[' in requirement:
+            requirement = requirement.split('[', 1)[0]
 
         version = None
 

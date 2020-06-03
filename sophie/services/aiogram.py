@@ -17,7 +17,7 @@
 
 from aiogram import Bot, Dispatcher
 
-from sophie.config import config
+from sophie.utils.config import config
 from sophie.utils.logging import log
 
 

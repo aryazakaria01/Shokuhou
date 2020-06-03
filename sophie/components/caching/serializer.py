@@ -1,5 +1,4 @@
 # Copyright (C) 2018 - 2020 MrYacha.
-# Copyright (C) 2020 Jeepeo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,29 +15,15 @@
 #
 # This file is part of Sophie.
 
-import asyncio
-
-from aiocache import Cache
-
-from .mode import mode_kwargs, mode
-from .serializer import serializer
-from .plugins import plugins
-
 from sophie.utils.config import config
-from sophie.utils.logging import log
 
-namespace = config('cache/namespace', default='sophie')
 
-cache = Cache(
-    cache_class=mode,
-    namespace=namespace,
-    serializer=serializer(),
-    plugins=plugins,
-    **mode_kwargs
-)
-
-try:
-    asyncio.ensure_future(cache.set('foo', 'bar'))
-except ConnectionRefusedError:
-    log.critical("Can't connect to the cache database! Exiting...")
-    exit(2)
+conf = config('cache/serializer', default='pickle').lower()
+if conf == 'pickle':
+    from aiocache.serializers import PickleSerializer
+    serializer = PickleSerializer
+elif conf == 'json':
+    from aiocache.serializers import JsonSerializer
+    serializer = JsonSerializer
+else:
+    raise NotImplementedError

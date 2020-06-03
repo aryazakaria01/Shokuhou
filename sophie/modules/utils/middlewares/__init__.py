@@ -16,6 +16,4 @@
 # This file is part of Sophie.
 
 def __setup__():
-    from .message_usefull import __setup__ as message_usefull
-
-    message_usefull()
+    pass

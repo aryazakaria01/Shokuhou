@@ -20,7 +20,7 @@ import asyncio
 from logging import DEBUG
 from importlib import import_module
 
-from sophie.config import config
+from sophie.utils.config import config
 from sophie.utils.logging import log
 from sophie.utils.loader import load_all_modules, post_init
 

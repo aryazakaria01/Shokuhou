@@ -16,24 +16,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import asyncio
-import logging
-import sys
-
-from motor import motor_asyncio
+from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ServerSelectionTimeoutError
 
-from sophie.config import config
+from sophie.utils.config import config
+from sophie.utils.logging import log
 
-MONGO_URI = config('mongo/url', default='localhost')
-MONGO_PORT = config('mongo/port', default=27017)
-MONGO_DB = config('mongo/database', default='sophie')
 
-# Init MongoD
-motor = motor_asyncio.AsyncIOMotorClient(MONGO_URI, MONGO_PORT)
-db = motor[MONGO_DB]
+MONGO_URI = config('mongodb/uri', default='localhost')
+MONGO_DB = config('mongodb/db', default='sophie')
+
+# Init MongoDB
+mongo = MongoClient(MONGO_URI)
+mongo_db = mongo[MONGO_DB]
+motor = AsyncIOMotorClient(MONGO_URI)
+motor_db = motor[MONGO_DB]
 
 try:
-    asyncio.ensure_future(motor.server_info())
+    mongo.server_info()
 except ServerSelectionTimeoutError:
-    sys.exit(logging.critical("Can't connect to mongodb! Exiting..."))
+    log.critical("Can't connect to the MongoDB! Exiting...")
+    exit(2)

@@ -16,29 +16,28 @@
 #
 # This file is part of Sophie.
 
-import asyncio
-
-from aiocache import Cache
-
-from .mode import mode_kwargs, mode
-from .serializer import serializer
-from .plugins import plugins
-
 from sophie.utils.config import config
-from sophie.utils.logging import log
 
-namespace = config('cache/namespace', default='sophie')
 
-cache = Cache(
-    cache_class=mode,
-    namespace=namespace,
-    serializer=serializer(),
-    plugins=plugins,
-    **mode_kwargs
-)
+conf = config('cache/mode', default='memory').lower()
 
-try:
-    asyncio.ensure_future(cache.set('foo', 'bar'))
-except ConnectionRefusedError:
-    log.critical("Can't connect to the cache database! Exiting...")
-    exit(2)
+if conf == 'memory':
+    from aiocache import SimpleMemoryCache
+    mode = SimpleMemoryCache
+    mode_kwargs = {}
+elif conf == 'redis':
+    from aiocache import RedisCache
+    mode = RedisCache
+    mode_kwargs = {
+        'endpoint': config('cache/redis/url', default='localhost'),
+        'port': config('cache/redis/port', default=6379)
+    }
+elif conf == 'memcached':
+    from aiocache import MemcachedCache
+    mode = MemcachedCache
+    mode_kwargs = {
+        'endpoint': config('cache/redis/url', default='localhost'),
+        'port': config('cache/redis/port', default=6379)
+    }
+else:
+    raise NotImplementedError

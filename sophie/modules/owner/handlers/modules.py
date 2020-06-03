@@ -19,12 +19,10 @@ from aiogram.dispatcher.handler import MessageHandler
 from aiogram.api.types import BufferedInputFile
 
 from .. import router
-from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
 
 
 @router.message(commands=['modules'], is_op=True)
-@apply_strings_dec('owner')
 class ModulesListHandler(MessageHandler):
     @staticmethod
     def loaded_modules():

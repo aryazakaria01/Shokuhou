@@ -20,7 +20,6 @@ from sophie.utils.loader import log
 
 async def __setup__():
     from .loader import load_all_languages
-    from .overwrite import __setup__ as overwrite
     from .db import __setup__ as database
 
     log.debug('Loading localizations...')
@@ -31,6 +30,3 @@ async def __setup__():
     database()
     log.debug('...Done!')
 
-    log.debug('Overwriting strings util...')
-    overwrite()
-    log.debug('...Done!')

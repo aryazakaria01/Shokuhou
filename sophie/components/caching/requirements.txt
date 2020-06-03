@@ -1,1 +1,1 @@
-rejson
+aiocache[redis, memcached]

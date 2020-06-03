@@ -31,7 +31,7 @@ from .. import router, background_router
 from sophie.components.pyrogram import pbot
 from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
-from sophie.services.mongo import db
+from sophie.services.mongo import mongo
 
 # TODO: Use admin filter, Use arg filter
 
@@ -116,7 +116,7 @@ class LocksModule:
             if locktype in self.shorts.keys():
                 locktype = self.shorts.get(locktype)
             new = {'chat_id': chat_id, locktype: action}
-        await db.locks.update_one(
+        await mongo.locks.update_one(
             {'chat_id': chat_id},
             {'$set': new},
             upsert=True
@@ -147,7 +147,7 @@ class LocksModule:
         else:
             if locktype in self.shorts:
                 locktype = self.shorts.get(locktype)
-            current_settings = await db.locks.find_one({'chat_id': chat_id})
+            current_settings = await mongo.locks.find_one({'chat_id': chat_id})
             if current_settings is not None and locktype in current_settings:
                 return current_settings[locktype] == action
             return False
@@ -160,7 +160,7 @@ class LocksModule:
 
     @staticmethod
     async def update_cache(chat_id):
-        data = await db.locks.find_one({'chat_id': chat_id})
+        data = await mongo.locks.find_one({'chat_id': chat_id})
         if data is not None:
             del data['chat_id'], data['_id']
             redis.jsonset(f'locks_{chat_id}', Path.rootPath(), data)
@@ -259,7 +259,7 @@ class Locks(MessageHandler, LocksModule):
                 if api[lock] is True:
                     return True
             for lock in self.nonapi_list():
-                if lock not in (data := await db.locks.find_one({'chat_id': self.chat.id})):
+                if lock not in (data := await mongo.locks.find_one({'chat_id': self.chat.id})):
                     return True
                 if data[lock] is not False:
                     return True

@@ -20,6 +20,9 @@ import yaml
 from sophie.utils.logging import log
 
 
+LANGUAGES = []
+
+
 def load_all_languages():
     from sophie.modules import LOADED_MODULES
 
@@ -38,5 +41,8 @@ def load_all_languages():
 
                 if 'translations' not in LOADED_MODULES[module['name']]:
                     LOADED_MODULES[module['name']]['translations'] = {}
+
+                if lang_name not in LANGUAGES:
+                    LANGUAGES.append(lang_name)
 
                 LOADED_MODULES[module['name']]['translations'][lang_name] = lang
