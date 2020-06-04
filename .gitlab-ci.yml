@@ -20,9 +20,6 @@ stages:
   - test
   - release
 
-variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
-
 
 python:flake8:
   image: python:latest
@@ -30,22 +27,70 @@ python:flake8:
   allow_failure: true
   before_script:
     - pip install flake8 pyflakes
+    - pip install flake8-bugbear flake8-builtins flake8-print
   script:
     - cd /builds/SophieBot/sophie/
-    - python3 -m flake8 sophie --max-line-length=120
+    - python3 -m flake8 sophie
 
 
-docker:
+docker_branch:
+  # Builds docker image with tag same as commited branch
+  image: docker:latest
+  stage: release
+  services:
+    - docker:dind
+  variables:
+    DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
+  script:
+    - docker build -t "$DOCKER_IMAGE" .
+    - docker push "$DOCKER_IMAGE"
+  only:
+    - stable
+    - unstable
+    - staging
+    - v3
+
+
+docker_latest:
+  # Builds docker image with 'latest' tag
+  image: docker:latest
+  stage: release
+  services:
+    - docker:dind
+  variables:
+    DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:latest"
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
+  script:
+    - docker build -t "$DOCKER_IMAGE" .
+    - docker push "$DOCKER_IMAGE"
+  only:
+    - stable
+
+docker_version:
+  # Builds docker image with version tags
   image: docker:latest
   stage: release
   services:
     - docker:dind
   before_script:
+    - apk add python3
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
   script:
-    - docker build --pull -t "$DOCKER_IMAGE" .
-    - docker push "registry.gitlab.com/sophiebot/sophie:$CI_COMMIT_BRANCH"
+    - VERSION_FULL=$(python3 -c "import sophie.version as version; print(version.version)")
+    - VERSION_MAJOR=$(echo $VERSION_FULL | sed 's/-.*//')
+    - VERSION_MINOR=$(echo $VERSION_MAJOR | sed 's/\..*//')
+    - TAGS="$VERSION_FULL $VERSION_MAJOR $VERSION_MINOR"
+
+    - for tag in $TAGS; do
+        DOCKER_IMAGE="$CI_REGISTRY_IMAGE:$tag";
+        docker build -t "$DOCKER_IMAGE" .;
+        docker push "$DOCKER_IMAGE";
+      done
   only:
-    - master
+    - stable
     - unstable
+    - staging
     - v3
