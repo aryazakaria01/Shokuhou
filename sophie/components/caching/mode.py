@@ -18,15 +18,16 @@
 
 from sophie.utils.config import config
 
-
 conf = config('cache/mode', default='memory').lower()
 
 if conf == 'memory':
     from aiocache import SimpleMemoryCache
+
     mode = SimpleMemoryCache
     mode_kwargs = {}
 elif conf == 'redis':
     from aiocache import RedisCache
+
     mode = RedisCache
     mode_kwargs = {
         'endpoint': config('cache/redis/url', default='localhost'),
@@ -34,10 +35,11 @@ elif conf == 'redis':
     }
 elif conf == 'memcached':
     from aiocache import MemcachedCache
+
     mode = MemcachedCache
     mode_kwargs = {
-        'endpoint': config('cache/redis/url', default='localhost'),
-        'port': config('cache/redis/port', default=6379)
+        'endpoint': config('cache/memcached/url', default='localhost'),
+        'port': config('cache/memcached/port', default=11211)
     }
 else:
     raise NotImplementedError

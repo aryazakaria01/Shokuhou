@@ -29,4 +29,3 @@ async def __setup__():
     log.debug('Loading database...')
     database()
     log.debug('...Done!')
-

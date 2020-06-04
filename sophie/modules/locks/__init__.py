@@ -18,11 +18,11 @@
 
 from aiogram import Router
 
-
 router = Router()
 
 background_router = Router()
 router.include_router(background_router)
+
 
 async def __setup__():
     from .handlers import __init__

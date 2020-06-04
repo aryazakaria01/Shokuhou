@@ -18,8 +18,8 @@
 
 from rejson import Path
 
-from sophie.services.aiogram import bot
 from sophie.components.caching import redis
+from sophie.services.aiogram import bot
 
 
 async def get_admins_rights(chat_id, force_update=False):

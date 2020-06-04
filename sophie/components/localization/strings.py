@@ -41,5 +41,3 @@ async def get_strings_by_chat_id(module: str, chat_id: int) -> dict:
     strings = get_strings(module, locale)
 
     return strings
-
-

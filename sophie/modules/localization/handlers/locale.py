@@ -16,11 +16,9 @@
 # This file is part of Sophie.
 
 from aiogram.dispatcher.handler import MessageHandler
-from aiogram.api.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from sophie.components.localization.locale import get_chat_locale
 from .. import router
-
-from sophie.components.localization.locale import get_chat_locale, set_chat_locale, get_languages_list
 
 
 @router.message(commands=['lang'])
@@ -29,4 +27,3 @@ class GetLanguageMenu(MessageHandler):
         chat_id = self.chat.id
         language = await get_chat_locale(chat_id)
         await self.event.reply(language)
-

@@ -26,15 +26,11 @@ def cached(ttl=None, key=None, noself=False):
     def wrapped(func):
         async def wrapped0(*args, **kwargs):
             ordered_kwargs = sorted(kwargs.items())
-            if key:
-                new_key = key
-            else:
-                new_key = (
-                    (func.__module__ or "")
-                    + func.__name__
-                    + str(args[1:] if noself else args)
-                    + str(ordered_kwargs)
-                )
+            new_key = key
+            if not new_key:
+                new_key = (func.__module__ or "") + func.__name__
+                new_key += str(args[1:] if noself else args)
+                new_key += str(ordered_kwargs)
 
             value = await cache.get(new_key)
             if value is not None:
@@ -44,6 +40,7 @@ def cached(ttl=None, key=None, noself=False):
             asyncio.ensure_future(cache.set(new_key, result, ttl=ttl))
             log.debug(f'Cached: writing new data for key - {new_key}')
             return result
+
         return wrapped0
 
     return wrapped

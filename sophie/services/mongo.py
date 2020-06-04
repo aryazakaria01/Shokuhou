@@ -16,13 +16,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
 from sophie.utils.config import config
 from sophie.utils.logging import log
-
 
 MONGO_URI = config('mongodb/uri', default='localhost')
 MONGO_DB = config('mongodb/db', default='sophie')

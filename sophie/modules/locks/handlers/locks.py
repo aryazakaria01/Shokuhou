@@ -19,19 +19,20 @@
 import re
 from contextlib import suppress
 
-from aiogram.dispatcher.handler import MessageHandler
 from aiogram.api import types
+from aiogram.dispatcher.handler import MessageHandler
 from aiogram.utils.exceptions import TelegramAPIError
 from pyrogram import ChatPermissions
 from pyrogram.errors import BadRequest, ChatNotModified
 from rejson import Path
+from sophie.modules.utils.strings import apply_strings_dec
 
 from sophie.components.caching import redis
-from .. import router, background_router
 from sophie.components.pyrogram import pbot
-from sophie.modules.utils.strings import apply_strings_dec
 from sophie.modules.utils.message import get_args_list
 from sophie.services.mongo import mongo
+from .. import router, background_router
+
 
 # TODO: Use admin filter, Use arg filter
 
@@ -194,7 +195,7 @@ class LocksHandler(MessageHandler, LocksModule):
                     if data := re.search(invitelink, self.event.text):
                         if (match := data.group(3)) != 'joinchat':
                             try:
-                                chat = (await pbot.get_chat('@'+match)).type
+                                chat = (await pbot.get_chat('@' + match)).type
                             except BadRequest:
                                 pass
                             else:
@@ -203,7 +204,7 @@ class LocksHandler(MessageHandler, LocksModule):
                             return True
 
             if 'forward' in data and data['forward'] is False:
-                if (getattr(self.event, 'forward_from_chat') or getattr(self.event, 'forward_from')) is not None:
+                if self.event.forward_from_chat or self.event.forward_from is not None:
                     return True
 
     async def handle(self):

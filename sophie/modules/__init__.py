@@ -27,22 +27,22 @@ def list_all_modules():
     modules_directory = 'sophie/modules'
 
     all_modules = []
-    for dir in os.listdir(modules_directory):
-        path = modules_directory + '/' + dir
+    for directory in os.listdir(modules_directory):
+        path = modules_directory + '/' + directory
         if not os.path.isdir(path):
             continue
 
-        if dir == '__pycache__':
+        if directory == '__pycache__':
             continue
 
         if not os.path.isfile(path + '/version.txt'):
             continue
 
-        if dir in all_modules:
+        if directory in all_modules:
             log.critical("Modules with same name can't exists!")
             exit(5)
 
-        all_modules.append(dir)
+        all_modules.append(directory)
     return all_modules
 
 

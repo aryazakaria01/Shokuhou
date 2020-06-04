@@ -17,14 +17,12 @@
 
 import asyncio
 import os
-import sys
 import subprocess
-
+import sys
 from importlib import import_module
 
-from sophie.utils.logging import log
-
 from sophie.utils.config import config
+from sophie.utils.logging import log
 
 
 def get_installed_packages():
@@ -171,7 +169,6 @@ def load_module(module):
     LOADED_MODULES[module['name']] = new
 
 
-
 def load_modules(to_load: list):
     base_path = 'sophie/modules/'
 
@@ -223,5 +220,3 @@ def post_init():
     # Run before_srv_task for modules
     loop = asyncio.get_event_loop()
     loop.run_until_complete(before_srv_task(LOADED_MODULES.values()))
-
-

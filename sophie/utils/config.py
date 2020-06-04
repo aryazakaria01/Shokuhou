@@ -17,6 +17,7 @@
 #
 
 import os
+
 import toml
 
 from sophie.utils.logging import log

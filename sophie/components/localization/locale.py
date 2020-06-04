@@ -16,13 +16,11 @@
 # This file is part of Sophie.
 
 from typing import List
+
 from sophie.components.caching.cached import cached
-
-
 from sophie.utils.config import config
-
-from .loader import LANGUAGES
 from .db.locale import get_lang, set_lang
+from .loader import LANGUAGES
 
 
 @cached()

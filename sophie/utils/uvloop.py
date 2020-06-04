@@ -16,8 +16,8 @@
 # This file is part of Sophie.
 
 import asyncio
-import uvloop
 
+import uvloop
 
 loop_policy = uvloop.EventLoopPolicy()
 asyncio.set_event_loop_policy(loop_policy)

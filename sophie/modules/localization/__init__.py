@@ -17,10 +17,8 @@
 
 from aiogram import Router
 
-
 router = Router()
 
 
 async def __setup__():
     from .handlers import __init__
-

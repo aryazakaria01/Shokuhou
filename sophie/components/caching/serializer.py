@@ -17,13 +17,14 @@
 
 from sophie.utils.config import config
 
-
 conf = config('cache/serializer', default='pickle').lower()
 if conf == 'pickle':
     from aiocache.serializers import PickleSerializer
+
     serializer = PickleSerializer
 elif conf == 'json':
     from aiocache.serializers import JsonSerializer
+
     serializer = JsonSerializer
 else:
     raise NotImplementedError

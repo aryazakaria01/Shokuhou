@@ -15,11 +15,11 @@
 #
 # This file is part of Sophie.
 
-from aiogram.dispatcher.handler import MessageHandler
 from aiogram.api.types import BufferedInputFile
+from aiogram.dispatcher.handler import MessageHandler
 
-from .. import router
 from sophie.modules.utils.message import get_args_list
+from .. import router
 
 
 @router.message(commands=['modules'], is_op=True)

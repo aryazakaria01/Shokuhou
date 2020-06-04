@@ -16,4 +16,3 @@
 # This file is part of Sophie.
 
 from . import modules
-

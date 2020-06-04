@@ -20,12 +20,11 @@ import asyncio
 
 from aiocache import Cache
 
-from .mode import mode_kwargs, mode
-from .serializer import serializer
-from .plugins import plugins
-
 from sophie.utils.config import config
 from sophie.utils.logging import log
+from .mode import mode_kwargs, mode
+from .plugins import plugins
+from .serializer import serializer
 
 namespace = config('cache/namespace', default='sophie')
 

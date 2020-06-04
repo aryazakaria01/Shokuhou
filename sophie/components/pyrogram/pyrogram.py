@@ -20,15 +20,14 @@ import asyncio
 import logging
 
 from pyrogram import Client
+
 from sophie.utils.config import config
 from sophie.utils.logging import log
-
 
 TOKEN = config('general/token', require=True)
 session_name = TOKEN.split(':')[0]
 API_ID = config('pyrogram/api_id', require=True)
 API_HASH = config('pyrogram/api_hash', require=True)
-
 
 log.debug('Starting 🔥Pyrogram...')
 

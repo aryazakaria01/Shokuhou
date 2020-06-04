@@ -26,12 +26,12 @@ def list_all_components():
     components_directory = 'sophie/components'
 
     all_components = []
-    for dir in os.listdir(components_directory):
-        path = components_directory + '/' + dir
+    for directory in os.listdir(components_directory):
+        path = components_directory + '/' + directory
         if not os.path.isdir(path):
             continue
 
-        if dir == '__pycache__':
+        if directory == '__pycache__':
             continue
 
         if not os.path.isfile(path + '/version.txt'):
@@ -41,7 +41,7 @@ def list_all_components():
             log.critical("Components with same name can't exists!")
             exit(5)
 
-        all_components.append(dir)
+        all_components.append(directory)
     return all_components
 
 

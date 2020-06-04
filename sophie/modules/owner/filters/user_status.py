@@ -17,8 +17,8 @@
 
 from aiogram.dispatcher.filters import BaseFilter
 
-from .. import router
 from sophie.utils.config import config
+from .. import router
 
 
 class IsOwner(BaseFilter):

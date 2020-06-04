@@ -17,11 +17,9 @@
 
 from aiogram import Router
 
-
 router = Router()
 
 
 async def __setup__():
-    from .filters import __init__
-    from .handlers import __init__
-
+    from .filters import __init__ as filters
+    from .handlers import __init__ as handlers

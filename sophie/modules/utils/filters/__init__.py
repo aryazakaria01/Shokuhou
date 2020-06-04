@@ -22,4 +22,3 @@ def __setup__():
     from .command import __setup__ as command
 
     command(dp)
-

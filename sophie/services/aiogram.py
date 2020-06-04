@@ -20,7 +20,6 @@ from aiogram import Bot, Dispatcher
 from sophie.utils.config import config
 from sophie.utils.logging import log
 
-
 log.debug('Starting Aiogram...')
 
 TOKEN = config('general/token', require=True)
