@@ -27,13 +27,15 @@ MONGO_URI = config('mongodb/uri', default='localhost')
 MONGO_DB = config('mongodb/db', default='sophie')
 
 # Init MongoDB
-mongo = MongoClient(MONGO_URI)
-mongo_db = mongo[MONGO_DB]
+mongo_client = MongoClient(MONGO_URI)
+sync_mongo = mongo_client[MONGO_DB]
+
+# Async mongo
 motor = AsyncIOMotorClient(MONGO_URI)
-motor_db = motor[MONGO_DB]
+mongo = motor[MONGO_DB]
 
 try:
-    mongo.server_info()
+    mongo_client.server_info()
 except ServerSelectionTimeoutError:
     log.critical("Can't connect to the MongoDB! Exiting...")
     exit(2)
