@@ -20,12 +20,13 @@ from sophie.utils.config import config
 conf = config('cache/plugins', default=[])
 plugins = []
 
-if 'timing' in conf:
-    from aiocache.plugins import TimingPlugin
+if conf is not None:
+    if 'timing' in conf:
+        from aiocache.plugins import TimingPlugin
 
-    plugins.append(TimingPlugin)
+        plugins.append(TimingPlugin)
 
-if 'hitmissratio' in conf:
-    from aiocache.plugins import HitMissRatioPlugin
+    if 'hitmissratio' in conf:
+        from aiocache.plugins import HitMissRatioPlugin
 
-    plugins.append(HitMissRatioPlugin)
+        plugins.append(HitMissRatioPlugin)
