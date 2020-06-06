@@ -15,8 +15,20 @@
 #
 # This file is part of Sophie.
 
-# Language info
-# NOTE: Write here data for your your language
-# NOTE: Use English name for your language, like 'Russian', instead of 'Русский'
-language_name: 'English'
-language_flag: '🇬🇧'
+from typing import List
+from babel.core import Locale
+
+from .loader import LANGUAGES
+
+
+def get_languages_list() -> List[str]:
+    languages = LANGUAGES
+    return languages
+
+
+def get_babel(locale_code: str) -> Locale:
+    return Locale.parse(locale_code, sep='-')
+
+
+def get_language_emoji(locale) -> str:
+    return '🇺🇸'

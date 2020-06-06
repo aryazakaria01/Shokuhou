@@ -15,29 +15,83 @@
 #
 # This file is part of Sophie.
 
+from functools import wraps
+
+from babel.core import Locale
 
 from .locale import get_chat_locale
+from .lanuages import get_babel, get_language_emoji
 
 
-def get_strings(module: str, lang: str) -> dict:
-    from sophie.modules import LOADED_MODULES
-    if lang not in LOADED_MODULES[module]['translations']:
-        lang = 'en-US'
+class GetStrings:
+    def __init__(self, module: str):
+        from sophie.modules import LOADED_MODULES
 
-    return LOADED_MODULES[module]['translations'][lang]
+        self.modules = LOADED_MODULES
+        self.module = module
+
+    def get_by_locale_name(self, locale_code: str):
+        if locale_code not in self.modules[self.module]['translations']:
+            locale_code = 'en-US'
+
+        return self.modules[self.module]['translations'][locale_code]
+
+    async def get_by_chat_id(self, chat_id: int):
+        locale_name = await get_chat_locale(chat_id)
+        return self.get_by_locale_name(locale_name)
 
 
-def get_string(module: str, key: str, lang: str) -> (str, dict, list):
-    strings = get_strings(module, lang)
-    if key not in strings:
-        # Fallback to English in case if current language don't have this strings
-        strings = get_strings(module, 'en-US')
+class GetString:
+    def __init__(self, module: str, key: str):
+        self.module = module
+        self.key = key
 
-    return strings[key]
+    def get_by_locale_name(self, locale_code: str):
+        strings = GetStrings(self.module)[locale_code]
+        return strings
+
+    async def get_by_chat_id(self, chat_id: int):
+        locale_code = await get_chat_locale(chat_id)
+        return self.get_by_locale_name(locale_code)
 
 
-async def get_strings_by_chat_id(module: str, chat_id: int) -> dict:
-    locale = await get_chat_locale(chat_id)
-    strings = get_strings(module, locale)
+class Strings:
+    """
+    Replacement of strings dict
+    """
 
-    return strings
+    def __init__(self, locale_code: str, module: str):
+        self.locale_code = locale_code
+        self.strings = GetStrings(module).get_by_locale_name(locale_code)
+
+    def _get_string(self, key) -> str:
+        return self.strings[key]
+
+    def get(self, key, **kwargs) -> str:
+        string = self._get_string(key)
+        string = string.format(**kwargs)
+        return string
+
+    @property
+    def babel(self) -> Locale:
+        return get_babel(self.locale_code)
+
+    @property
+    def emoji(self) -> str:
+        return get_language_emoji(self.locale_code)
+
+    def __getitem__(self, key) -> (str, dict, str):
+        return self._get_string(key)
+
+
+def get_strings_dec(func):
+
+    async def decorated(message, *args, **kwargs):
+        module_name = func.__module__.split('.')[2]
+
+        chat_id = message.chat.id
+        strings = Strings(await get_chat_locale(chat_id), module_name)
+
+        return await func(message, *args, strings=strings, **kwargs)
+
+    return decorated

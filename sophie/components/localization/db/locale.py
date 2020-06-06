@@ -15,7 +15,7 @@
 #
 # This file is part of Sophie.
 
-from sophie.services.mongo import motor_db, mongo_db
+from sophie.services.mongo import mongo, sync_mongo
 from sophie.utils.logging import log
 
 col_name = 'locale'
@@ -43,13 +43,13 @@ async def set_lang(chat_id: int, locale_code: str) -> dict:
         'locale_code': locale_code
     }
 
-    await motor_db[col_name].replace_one({'chat_id': chat_id}, data, upsert=True)
+    await mongo[col_name].replace_one({'chat_id': chat_id}, data, upsert=True)
 
     return data
 
 
 async def get_lang(chat_id: int) -> (str, None):
-    data = await motor_db[col_name].find_one({'chat_id': chat_id})
+    data = await mongo[col_name].find_one({'chat_id': chat_id})
     if not data:
         return None
 
@@ -57,12 +57,12 @@ async def get_lang(chat_id: int) -> (str, None):
 
 
 def __setup__():
-    if col_name not in mongo_db.collection_names():
+    if col_name not in sync_mongo.collection_names():
         log.info(f'Created not exited column "{col_name}"')
-        mongo_db.create_collection(col_name)
+        sync_mongo.create_collection(col_name)
 
     log.debug(f'Running validation cmd for "{col_name}" column')
-    mongo_db.command({
+    sync_mongo.command({
         'collMod': col_name,
         'validator': col_validation,
         'validationLevel': 'strict'

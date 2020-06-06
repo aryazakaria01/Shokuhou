@@ -15,16 +15,13 @@
 #
 # This file is part of Sophie.
 
+from abc import ABC, abstractmethod
+
 from aiogram.dispatcher.handler import MessageHandler
 
-from sophie.components.localization.strings import get_strings_dec
-from .. import router
 
+class DataMessageHandler(MessageHandler, ABC):
 
-@router.message(commands=['lang'])
-@get_strings_dec
-class GetLanguageMenu(MessageHandler):
-    async def handle(self):
-        strings = self.data['strings']
-        text = strings.get('current_lang', emoji=strings.emoji, language=strings.babel.english_name)
-        await self.event.reply(text)
+    @property
+    def data(self):
+        return self.data

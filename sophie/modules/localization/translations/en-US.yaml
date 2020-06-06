@@ -15,16 +15,10 @@
 #
 # This file is part of Sophie.
 
-from aiogram.dispatcher.handler import MessageHandler
+# Language info
+# NOTE: Write here data for your your language
+# NOTE: Use English name for your language, like 'Russian', instead of 'Русский'
+language_name: 'English'
+language_flag: '🇬🇧'
 
-from sophie.components.localization.strings import get_strings_dec
-from .. import router
-
-
-@router.message(commands=['lang'])
-@get_strings_dec
-class GetLanguageMenu(MessageHandler):
-    async def handle(self):
-        strings = self.data['strings']
-        text = strings.get('current_lang', emoji=strings.emoji, language=strings.babel.english_name)
-        await self.event.reply(text)
+current_lang: "Current Language is <b>{emoji} {language}</b>"
