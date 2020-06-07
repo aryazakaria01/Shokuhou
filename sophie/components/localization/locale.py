@@ -20,7 +20,6 @@ from sophie.utils.config import config
 from .db.locale import get_lang, set_lang
 
 
-
 @cached()
 async def get_chat_locale(chat_id) -> str:
     lang = await get_lang(chat_id)
@@ -32,5 +31,3 @@ async def get_chat_locale(chat_id) -> str:
 
 async def set_chat_locale(chat_id, locale_code) -> dict:
     return await set_lang(chat_id, locale_code)
-
-
