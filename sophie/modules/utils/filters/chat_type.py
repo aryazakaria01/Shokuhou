@@ -1,4 +1,5 @@
 # Copyright (C) 2018 - 2020 MrYacha.
+# Copyright (C) 2020 Jeepeo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -15,12 +16,29 @@
 #
 # This file is part of Sophie.
 
-from sophie.services.aiogram import dp
+from aiogram.dispatcher.filters import BaseFilter
+from sophie.modules.connections import router
 
 
-def __setup__():
-    from .chat_type import __setup__ as chat_type
-    from .command import __setup__ as command
+class OnlyGroups(BaseFilter):
+    only_groups: bool
 
-    command(dp)
-    chat_type(dp)
+    async def __call__(self, message):
+        if message.chat.type in ('group', 'supergroup'):
+            return True
+        return False
+
+
+class OnlyPM(BaseFilter):
+    only_pm: bool
+
+    async def __call__(self, message):
+        if message.chat.type == 'private':
+            return True
+        return False
+
+
+def __setup__(dp):
+
+    dp.message.bind_filter(OnlyGroups)
+    dp.message.bind_filter(OnlyPM)

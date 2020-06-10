@@ -1,4 +1,5 @@
 # Copyright (C) 2018 - 2020 MrYacha.
+# Copyright (C) 2020 Jeepeo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -15,12 +16,10 @@
 #
 # This file is part of Sophie.
 
-from sophie.services.aiogram import dp
+from aiogram import Router
+
+router = Router()
 
 
-def __setup__():
-    from .chat_type import __setup__ as chat_type
-    from .command import __setup__ as command
-
-    command(dp)
-    chat_type(dp)
+async def __setup__():
+    from .handlers import __init__
