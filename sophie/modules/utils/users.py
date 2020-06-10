@@ -15,15 +15,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # This file is part of Sophie.
-from aiogram.utils.exceptions import TelegramAPIError
 
-from sophie.components.caching import cache
+from rejson import Path
+
+from sophie.components.caching import redis
 from sophie.services.aiogram import bot
 
 
 async def get_admins_rights(chat_id, force_update=False):
     key = 'admin_cache:' + str(chat_id)
-    if (alist := await cache.get(key)) and not force_update:
+    if (alist := redis.jsonget(key)) and not force_update:
         return alist
     else:
         alist = {}
@@ -41,21 +42,6 @@ async def get_admins_rights(chat_id, force_update=False):
                 'can_promote_members': admin.can_promote_members
             }
 
-        await cache.set(key, alist, 900)
+        redis.jsonset(key, Path.rootPath(), alist)
+        redis.expire(key, 900)
     return alist
-
-
-async def is_user_admin(chat_id, user_id):
-
-    if chat_id == user_id:
-        return True
-
-    try:
-        admins = await get_admins_rights(chat_id)
-    except TelegramAPIError:
-        return False
-    else:
-        if user_id in admins:
-            return True
-        else:
-            return False

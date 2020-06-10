@@ -19,8 +19,6 @@ from sophie.services.aiogram import dp
 
 
 def __setup__():
-    from .chat_type import __setup__ as chat_type
     from .command import __setup__ as command
 
     command(dp)
-    chat_type(dp)
