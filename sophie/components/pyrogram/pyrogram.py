@@ -26,6 +26,7 @@ from sophie.utils.logging import log
 
 TOKEN = config('general/token', require=True)
 session_name = TOKEN.split(':')[0]
+
 API_ID = config('pyrogram/api_id', require=True)
 API_HASH = config('pyrogram/api_hash', require=True)
 

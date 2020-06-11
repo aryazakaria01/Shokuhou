@@ -19,11 +19,11 @@ import os
 
 from sophie.utils.logging import log
 
-LOADED_MODULES = {}
-NOT_LOADED_MODULES = []
+LOADED_MODULES: dict = {}
+NOT_LOADED_MODULES: list = []
 
 
-def list_all_modules():
+def list_all_modules() -> list:
     modules_directory = 'sophie/modules'
 
     all_modules = []
@@ -46,5 +46,5 @@ def list_all_modules():
     return all_modules
 
 
-ALL_MODULES = sorted(list_all_modules())
+ALL_MODULES: list = sorted(list_all_modules())
 __all__ = ALL_MODULES + ["ALL_MODULES"]

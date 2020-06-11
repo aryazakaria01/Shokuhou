@@ -18,8 +18,8 @@
 from sophie.utils.loader import log
 
 
-async def __setup__():
-    from .loader import load_all_languages
+async def __setup__() -> bool:
+    from .loader import __setup__ as load_all_languages
     from .db import __setup__ as database
 
     log.debug('Loading localizations...')
@@ -29,3 +29,6 @@ async def __setup__():
     log.debug('Loading database...')
     database()
     log.debug('...Done!')
+
+    return True
+

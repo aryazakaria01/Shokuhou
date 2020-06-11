@@ -16,7 +16,6 @@
 # This file is part of Sophie.
 
 import os
-
 import yaml
 
 from sophie.utils.logging import log
@@ -24,7 +23,7 @@ from sophie.utils.logging import log
 LANGUAGES = []
 
 
-def load_all_languages():
+def load_all_languages() -> None:
     from sophie.modules import LOADED_MODULES
 
     for module in LOADED_MODULES.values():
@@ -47,3 +46,7 @@ def load_all_languages():
                     LANGUAGES.append(lang_name)
 
                 LOADED_MODULES[module['name']]['translations'][lang_name] = lang
+
+
+def __setup__():
+    load_all_languages()

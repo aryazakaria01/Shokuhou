@@ -85,13 +85,12 @@ class Strings:
 
 
 def get_strings_dec(func):
-
-    async def decorated(message, *args, **kwargs):
+    async def decorated(event, *args, **kwargs):
         module_name = func.__module__.split('.')[2]
 
-        chat_id = message.chat.id
+        chat_id = event.chat.id
         strings = Strings(await get_chat_locale(chat_id), module_name)
 
-        return await func(message, *args, strings=strings, **kwargs)
+        return await func(event, *args, strings=strings, **kwargs)
 
     return decorated

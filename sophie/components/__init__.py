@@ -19,13 +19,13 @@ import os
 
 from sophie.utils.logging import log
 
-LOADED_COMPONENTS = {}
+LOADED_COMPONENTS: dict = {}
 
 
-def list_all_components():
+def list_all_components() -> list:
     components_directory = 'sophie/components'
 
-    all_components = []
+    all_components: list = []
     for directory in os.listdir(components_directory):
         path = components_directory + '/' + directory
         if not os.path.isdir(path):
