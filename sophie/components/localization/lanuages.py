@@ -31,6 +31,6 @@ def get_babel(locale_code: str) -> Locale:
     return Locale.parse(locale_code, sep='-')
 
 
-def get_language_emoji(locale) -> str:
-    territory = Locale.parse(locale, sep='-').territory
+def get_language_emoji(locale_code: str) -> str:
+    territory = Locale.parse(locale_code, sep='-').territory
     return flag(territory)
