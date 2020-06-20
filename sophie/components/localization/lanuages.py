@@ -17,6 +17,7 @@
 
 from typing import List
 from babel.core import Locale
+from flag import flag
 
 from .loader import LANGUAGES
 
@@ -31,4 +32,5 @@ def get_babel(locale_code: str) -> Locale:
 
 
 def get_language_emoji(locale) -> str:
-    return '🇺🇸'
+    territory = Locale.parse(locale, sep='-').territory
+    return flag(territory)
