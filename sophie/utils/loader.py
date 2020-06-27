@@ -1,4 +1,5 @@
 # Copyright (C) 2018 - 2020 MrYacha.
+# Copyright (C) 2020 Jeepeo.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,41 +18,33 @@
 
 import asyncio
 import os
-import subprocess
-import sys
+import pkg_resources
 from importlib import import_module
 
 from sophie.utils.config import config
 from sophie.utils.logging import log
 
 
-def get_installed_packages():
-    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']).decode()
+def check_pip_requirement(requirement: str) -> None:
 
-    packages = {}
-    for package in reqs.splitlines():
-        split_char = '=='
+    try:
+        pkg_resources.require(requirement)
 
-        if '@' in package:
-            split_char = ' @ '
+    except pkg_resources.DistributionNotFound as error:
+        if (application := error.requirers_str) == 'the application':
+            application = 'Sophie'  # Ofc sophie
+        log.critical(f'No statisfied requirement "{error.req}" required by {application}')
+        exit(5)
 
-        name, version = package.split(split_char, 1)
+    except pkg_resources.ContextualVersionConflict as error:
+        _error_msg = f'{error.dist} is installed but require {error.req}, This req is need by {error.required_by}'
+        log.critical(_error_msg)
+        exit(5)
 
-        packages[name] = {'version': version}
-
-    return packages
-
-
-ALL_PACKAGES = get_installed_packages()
-
-
-def check_pip_requirement(requirement: str, version: str):
-    if requirement not in ALL_PACKAGES:
-        return False
-
-    # TODO: Add checking for requirement version
-    if not version:
-        return True
+    except pkg_resources.VersionConflict as error:
+        _error_msg = f'{error.dist} is installed but require {error.req}'
+        log.critical(_error_msg)
+        exit(5)
 
 
 def check_requirements(f):
@@ -72,19 +65,6 @@ def check_requirements(f):
         if '[' in requirement:
             requirement = requirement.split('[', 1)[0]
 
-        version = None
-
-        # TODO: Rewrite this
-        if '==' in requirement:
-            requirement, version = requirement.split('==', 1)
-            version = '==' + version
-        elif '>=' in requirement:
-            requirement, version = requirement.split('>=', 1)
-            version = '>=' + version
-        elif '<=' in requirement:
-            requirement, version = requirement.split('<=', 1)
-            version = '<=' + version
-
         if requirement.startswith('$'):
             # Component requirement
             component = requirement.replace('$', '')
@@ -95,12 +75,8 @@ def check_requirements(f):
                 else:  # Looks like we don't have such component
                     not_installed.append(requirement)
 
-        elif not check_pip_requirement(requirement, version):
-            not_installed.append(requirement)
-
-    if not_installed:
-        log.critical('No satisfied requirements: ' + ' '.join(not_installed))
-        exit(5)
+        # check pip requirement
+        check_pip_requirement(requirement)
 
     return True
 
