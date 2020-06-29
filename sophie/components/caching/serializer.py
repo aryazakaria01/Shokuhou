@@ -17,7 +17,7 @@
 
 from sophie.utils.config import config
 
-conf = config('cache/serializer', default='pickle').lower()
+conf = config.cache.serializer.lower()
 if conf == 'pickle':
     from aiocache.serializers import PickleSerializer
 

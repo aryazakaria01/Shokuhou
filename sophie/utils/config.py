@@ -1,4 +1,5 @@
 # Copyright (C) 2018 - 2020 MrYacha.
+# Copyright (C) 2020 Jeepeo.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,48 +17,82 @@
 # This file is part of Sophie.
 #
 
-import os
-
+import glob
 import toml
 
+from os import PathLike
+from typing import List
+
 from sophie.utils.logging import log
-
-DATA = {}
-CONFIG_PATH = 'config/config.toml'
-
-real_path = os.getcwd() + '/' + CONFIG_PATH
-
-if os.name == 'nt':  # Windows name workaround
-    real_path = real_path.replace('/', '\\')
-
-if os.path.isfile(real_path):
-    log.info(f'Using config file - {real_path}')
-    with open(CONFIG_PATH) as f:
-        DATA = toml.load(f)
-else:
-    log.warning("Using env vars")
+from pydantic import BaseSettings, BaseModel, ValidationError, Field
 
 
-def get_by_key(key, default=None, require=False):
-    data = DATA
-    keys = key.split('/')
-    for x, sub_key in enumerate(keys):
-        if sub_key not in data:
-            break
-        data = data[sub_key]
-        if x == len(keys) - 1:
-            return data
+# this class contains structures for initiating Config
+class Structure:
+    class General(BaseModel):
+        token: str
+        owner_id: int
+        operators: List[int] = []
 
-    if default:
-        return default
+    class Advanced(BaseModel):  # Advanced settings
+        debug: bool = False
+        uvloop: bool = False
 
-    if require:
-        log.critical(f'No config found by key "{key}"! Exiting!')
-        exit(3)
+    class Pyrogram(BaseModel):  # Settings for component 'Pyrogram'
+        app_id: int = None
+        app_hash: str = None
 
-    return None
+    class Mongo(BaseModel):  # settings for database
+        url: str = 'localhost'
+        namespace: str = 'sophie'
+
+    class Cache(BaseModel):  # settings for component 'Caching'
+
+        class Redis(BaseModel):  # redis config
+            url: str = 'localhost'
+            port: int = 6379
+
+        class MemCached(BaseModel):  # memcache config
+            url: str = 'localhost'
+            port: int = 11211
+
+        mode: str = 'memory'
+        redis: Redis
+        memcached: MemCached
+        plugins: List[str] = []
+        namespace: str = 'Sophie'
+        serializer: str = 'pickle'
+
+    class Localization(BaseModel):
+        default_language: str = 'en-US'
+
+    class Modules(BaseModel):
+        load: List[str] = ['owner']
+        dont_load: List[str] = []
 
 
-def config(key, default=None, require=False):
-    data = get_by_key(key, default=default, require=require)
-    return data
+class Conf(BaseSettings):
+
+    general: Structure.General = Field(..., env='GENERAL')
+    advanced: Structure.Advanced = Field(..., env='ADVANCED')
+    mongo: Structure.Mongo = Field(..., env='MONGO')
+    cache: Structure.Cache = Field(..., env='CACHE')
+    pyrogram: Structure.Pyrogram = Field(..., env='PYROGRAM')
+    localization: Structure.Localization = Field(..., env='LOCALIZATION')
+    modules: Structure.Modules = Field(..., env='MODULES')
+
+
+# loading configuration
+
+payload: dict = {}
+confs: List[PathLike] = glob.glob('**/config.toml', recursive=True)
+for conf in confs:
+    with open(conf) as toml_conf:
+        data = toml.load(toml_conf)
+        payload.update(data)
+
+try:
+    config: Conf = Conf(**payload)
+except ValidationError as error:
+    log.error(f'Something went wrong when loading config \n {str(error)}')
+    exit(5)

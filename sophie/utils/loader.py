@@ -160,8 +160,8 @@ def load_modules(to_load: list):
 def load_all_modules():
     from sophie.modules import ALL_MODULES
 
-    load = config('modules/load', default=[])
-    dont_load = config('modules/dont_load', default=[])
+    load = config.modules.load
+    dont_load = config.modules.dont_load
 
     if len(load) > 0:
         to_load = load

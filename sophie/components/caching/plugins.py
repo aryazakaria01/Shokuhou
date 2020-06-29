@@ -17,7 +17,7 @@
 
 from sophie.utils.config import config
 
-conf = config('cache/plugins', default=[])
+conf = config.cache.plugins
 plugins = []
 
 if conf is not None:

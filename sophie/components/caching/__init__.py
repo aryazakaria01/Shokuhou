@@ -26,7 +26,7 @@ from .mode import mode_kwargs, mode
 from .plugins import plugins
 from .serializer import serializer
 
-namespace = config('cache/namespace', default='sophie')
+namespace = config.cache.namespace
 
 cache = Cache(
     cache_class=mode,

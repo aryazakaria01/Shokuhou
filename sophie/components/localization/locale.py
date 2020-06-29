@@ -24,7 +24,7 @@ from .db.locale import get_lang, set_lang
 async def get_chat_locale(chat_id) -> str:
     lang = await get_lang(chat_id)
     if not lang:
-        return config('localization/default_language', default='en-US')
+        return config.localization.default_language
 
     return lang
 

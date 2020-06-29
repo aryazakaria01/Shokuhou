@@ -22,6 +22,6 @@ from sophie.utils.logging import log
 
 log.debug('Starting Aiogram...')
 
-TOKEN = config('general/token', require=True)
+TOKEN = config.general.token
 bot = Bot(TOKEN, parse_mode="HTML")
 dp = Dispatcher()

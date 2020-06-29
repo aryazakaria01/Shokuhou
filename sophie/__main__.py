@@ -19,18 +19,19 @@ import asyncio
 from importlib import import_module
 from logging import DEBUG
 
+from sophie.utils.config import config
+
 from sophie.modules.utils.filters import __setup__ as filters_setup
 from sophie.modules.utils.middlewares import __setup__ as middlewares_setup
 from sophie.services.aiogram import dp, bot
-from sophie.utils.config import config
 from sophie.utils.loader import load_all_modules, post_init
 from sophie.utils.logging import log
 
-if config("advanced/debug"):
+if config.advanced.debug:
     log.setLevel(DEBUG)
     log.warning("! Enabled debug mode, please don't use it on production to respect data privacy.")
 
-if config('advanced/uvloop', default=False):
+if config.advanced.uvloop:
     log.info("Enabling uvloop...")
     import_module('sophie.utils.uvloop')
 

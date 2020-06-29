@@ -25,7 +25,7 @@ class IsOwner(BaseFilter):
     is_owner: str
 
     async def __call__(self, message) -> bool:
-        owner_id = config('general/owner_id', require=True)
+        owner_id = config.general.owner_id
         if message.from_user.id != owner_id:
             return False
 
@@ -36,8 +36,8 @@ class IsOP(BaseFilter):
     is_op: str
 
     async def __call__(self, message) -> bool:
-        owner_id = config('general/owner_id', require=True)
-        operators = config('general/operators', default=[])
+        owner_id = config.general.owner_id
+        operators = config.general.operators
 
         operators.append(owner_id)
         if message.from_user.id not in operators:

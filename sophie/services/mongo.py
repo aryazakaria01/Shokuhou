@@ -23,8 +23,8 @@ from pymongo.errors import ServerSelectionTimeoutError
 from sophie.utils.config import config
 from sophie.utils.logging import log
 
-MONGO_URI = config('mongodb/uri', default='localhost')
-MONGO_DB = config('mongodb/db', default='sophie')
+MONGO_URI = config.mongo.url
+MONGO_DB = config.mongo.namespace
 
 # Init MongoDB
 mongo_client = MongoClient(MONGO_URI)
