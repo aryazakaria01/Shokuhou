@@ -21,7 +21,7 @@ import glob
 import toml
 
 from os import PathLike
-from typing import List
+from typing import List, Optional
 
 from sophie.utils.logging import log
 from pydantic import BaseSettings, BaseModel, ValidationError, Field
@@ -32,7 +32,7 @@ class Structure:
     class General(BaseModel):
         token: str
         owner_id: int
-        operators: List[int] = []
+        operators: Optional[List[int]] = []
 
     class Advanced(BaseModel):  # Advanced settings
         debug: bool = False
@@ -57,9 +57,9 @@ class Structure:
             port: int = 11211
 
         mode: str = 'memory'
-        redis: Redis
-        memcached: MemCached
-        plugins: List[str] = []
+        redis: Redis = Redis()
+        memcached: MemCached = MemCached()
+        plugins: Optional[List[str]] = None
         namespace: str = 'Sophie'
         serializer: str = 'pickle'
 
@@ -73,13 +73,14 @@ class Structure:
 
 class Conf(BaseSettings):
 
-    general: Structure.General = Field(..., env='GENERAL')
-    advanced: Structure.Advanced = Field(..., env='ADVANCED')
-    mongo: Structure.Mongo = Field(..., env='MONGO')
-    cache: Structure.Cache = Field(..., env='CACHE')
-    pyrogram: Structure.Pyrogram = Field(..., env='PYROGRAM')
-    localization: Structure.Localization = Field(..., env='LOCALIZATION')
-    modules: Structure.Modules = Field(..., env='MODULES')
+    # Some fields are required, some can follow default value
+    general: Structure.General = Field(..., env='GENERAL_SETTINGS')
+    advanced: Structure.Advanced = Field(Structure.Advanced().dict(), env='ADVANCED_SETTINGS')
+    mongo: Structure.Mongo = Field(Structure.Mongo().dict(), env='MONGO_SETUP')
+    cache: Structure.Cache = Field(Structure.Cache().dict(), env='CACHE_SETUP')
+    pyrogram: Structure.Pyrogram = Field(Structure.Pyrogram().dict(), env='PYROGRAM_SETUP')
+    localization: Structure.Localization = Field(Structure.Localization().dict(), env='LOCALIZATION')
+    modules: Structure.Modules = Field(Structure.Modules().dict(), env='MODULES_SETUP')
 
 
 # loading configuration
