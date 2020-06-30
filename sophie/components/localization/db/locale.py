@@ -15,6 +15,8 @@
 #
 # This file is part of Sophie.
 
+from pymongo import ASCENDING
+
 from sophie.services.mongo import mongo, sync_mongo
 from sophie.utils.logging import log
 
@@ -67,3 +69,9 @@ def __setup__():
         'validator': col_validation,
         'validationLevel': 'strict'
     })
+    log.debug(f'Creating indexes for "{col_name}" column')
+    sync_mongo[col_name].create_index(
+        [('chat_id', ASCENDING)],
+        name='chat_id',
+        unique=True,
+    )
