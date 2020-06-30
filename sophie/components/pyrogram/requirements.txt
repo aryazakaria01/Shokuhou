@@ -1,2 +1,2 @@
-Pyrogram
+pyrogram>=0.17.1-async
 TgCrypto
