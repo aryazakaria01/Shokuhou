@@ -18,6 +18,7 @@
 from aiogram.dispatcher.handler import MessageHandler
 
 from sophie.components.localization.strings import get_strings_dec
+from sophie.components.localization.lanuages import get_language_name
 from .. import router
 
 
@@ -26,5 +27,6 @@ from .. import router
 class GetLanguageMenu(MessageHandler):
     async def handle(self):
         strings = self.data['strings']
-        text = strings.get('current_lang', emoji=strings.emoji, language=strings.babel.english_name)
+
+        text = strings.get('current_lang', emoji=strings.emoji, language=get_language_name(strings.code))
         await self.event.reply(text)

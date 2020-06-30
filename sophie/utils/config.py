@@ -65,6 +65,7 @@ class Structure:
 
     class Localization(BaseModel):
         default_language: str = 'en-US'
+        languages_names_in_english: bool = True
 
     class Modules(BaseModel):
         load: List[str] = ['owner']

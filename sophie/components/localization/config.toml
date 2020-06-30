@@ -3,3 +3,4 @@
 
 [ localization ]
 default_language = 'en-US'
+languages_names_in_english = false

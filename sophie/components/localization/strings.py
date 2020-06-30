@@ -73,6 +73,10 @@ class Strings:
         return string
 
     @property
+    def code(self) -> str:
+        return self.locale_code
+
+    @property
     def babel(self) -> Locale:
         return get_babel(self.locale_code)
 
