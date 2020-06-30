@@ -62,7 +62,6 @@ def __conf__() -> dict:
 
         with open(path + '/config.toml') as conf:
             payload.update(toml.load(conf))
-    print(payload)
     return payload
 
 
