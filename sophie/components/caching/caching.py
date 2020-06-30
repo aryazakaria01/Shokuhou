@@ -25,7 +25,7 @@ from sophie.utils.logging import log
 
 
 def get_mode():
-    conf = config('cache/mode', default='memory').lower()
+    conf = config.cache.mode.lower()
 
     if conf == 'memory':
         from aiocache import SimpleMemoryCache
@@ -37,16 +37,16 @@ def get_mode():
 
         mode = RedisCache
         kwargs = {
-            'endpoint': config('cache/redis/url', default='localhost'),
-            'port': config('cache/redis/port', default=6379)
+            'endpoint': config.cache.redis.url,
+            'port': config.cache.redis.port
         }
     elif conf == 'memcached':
         from aiocache import MemcachedCache
 
         mode = MemcachedCache
         kwargs = {
-            'endpoint': config('cache/memcached/url', default='localhost'),
-            'port': config('cache/memcached/port', default=11211)
+            'endpoint': config.cache.memcached.url,
+            'port': config.cache.memcached.port
         }
     else:
         raise NotImplementedError
@@ -55,7 +55,7 @@ def get_mode():
 
 
 def get_serializer():
-    conf = config('cache/serializer', default='pickle').lower()
+    conf = config.cache.serializer.lower()
     if conf == 'pickle':
         from aiocache.serializers import PickleSerializer
 
@@ -71,7 +71,7 @@ def get_serializer():
 
 
 def __setup__():
-    namespace = config('cache/namespace', default='sophie')
+    namespace = config.cache.namespace
 
     mode, kwargs = get_mode()
     serializer = get_serializer()
