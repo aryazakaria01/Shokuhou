@@ -50,7 +50,6 @@ def check_pip_requirement(requirement: str) -> None:
 def check_requirements(f):
     from sophie.components import LOADED_COMPONENTS
 
-    not_installed = []
     for requirement in f.readlines():
         requirement = requirement.replace('\n', '')
 
@@ -73,7 +72,8 @@ def check_requirements(f):
                 if load_component(component):
                     continue
                 else:  # Looks like we don't have such component
-                    not_installed.append(requirement)
+                    log.critical(f'No such component: {component}')
+                    exit(5)
 
         # check pip requirement
         check_pip_requirement(requirement)
@@ -81,11 +81,15 @@ def check_requirements(f):
     return True
 
 
-def load_component(component_name):
+def load_component(component_name: str) -> bool:
     from sophie.components import LOADED_COMPONENTS
 
-    log.debug(f'Loading component: {component_name}')
     base_path = 'sophie/components/'
+    # check if component exists
+    if not os.path.exists(base_path + component_name):
+        return False
+
+    log.debug(f'Loading component: {component_name}')
     component = {
         'name': component_name,
         'path': (base_path + component_name).replace('\n', '')
