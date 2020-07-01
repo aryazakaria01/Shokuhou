@@ -7,10 +7,10 @@
     serializer = 'json'  # More of serializer, supported: pickle, json
     plugins = ['hitmissratio']
 
-    [[ cache.redis ]]
+    [ cache.redis ]
     url = "localhost"
     port = 6379
 
-    [[ cache.memcached ]]
+    [ cache.memcached ]
     url = "localhost"
     port = 11211
