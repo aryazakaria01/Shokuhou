@@ -1,5 +1,5 @@
 # Copyright (C) 2018 - 2020 MrYacha.
-# Copyright (C) 2020 Jeepeo
+# Copyright (C) 2020 Jeepeo.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,26 +16,27 @@
 #
 # This file is part of Sophie.
 
-import asyncio
+import os
 
-from aiocache import Cache
-
-from sophie.utils.config import config
 from sophie.utils.logging import log
-from .mode import mode_kwargs, mode
-from .serializer import serializer
+from .modules import load_pkg
 
-namespace = config.cache.namespace
 
-cache = Cache(
-    cache_class=mode,
-    namespace=namespace,
-    serializer=serializer(),
-    **mode_kwargs
-)
+def load_component(component_name: str) -> dict:
+    from . import LOADED_COMPONENTS
 
-try:
-    asyncio.ensure_future(cache.set('foo', 'bar'))
-except ConnectionRefusedError:
-    log.critical("Can't connect to the cache database! Exiting...")
-    exit(2)
+    base_path = 'sophie/components/'
+    # check if component exists
+    if not os.path.exists(base_path + component_name):
+        return False
+
+    log.debug(f'Loading component: {component_name}')
+    component = load_pkg({
+        'type': 'component',
+        'name': component_name,
+        'path': f'sophie/components/{component_name}',
+        'absolute_path': f"sophie.components.{component_name}"
+    })
+
+    LOADED_COMPONENTS[component_name] = component
+    return component

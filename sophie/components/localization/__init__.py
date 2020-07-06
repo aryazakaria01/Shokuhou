@@ -15,7 +15,7 @@
 #
 # This file is part of Sophie.
 
-from sophie.utils.loader import log
+from sophie.utils.logging import log
 
 
 async def __setup__() -> bool:

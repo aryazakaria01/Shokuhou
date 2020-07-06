@@ -26,7 +26,7 @@ from .. import router
 class ModulesListHandler(MessageHandler):
     @staticmethod
     def loaded_modules():
-        from sophie.modules import LOADED_MODULES
+        from sophie.utils.loader import LOADED_MODULES
         return LOADED_MODULES
 
     def list_modules_text(self):

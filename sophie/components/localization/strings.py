@@ -25,7 +25,7 @@ from .lanuages import get_babel, get_language_emoji
 
 class GetStrings:
     def __init__(self, module: str):
-        from sophie.modules import LOADED_MODULES
+        from sophie.utils.loader import LOADED_MODULES
 
         self.modules = LOADED_MODULES
         self.module = module

@@ -24,7 +24,7 @@ LANGUAGES = []
 
 
 def load_all_languages() -> None:
-    from sophie.modules import LOADED_MODULES
+    from sophie.utils.loader import LOADED_MODULES
 
     for module in LOADED_MODULES.values():
         log.debug(f"Loading localizations from {module['name']} module")

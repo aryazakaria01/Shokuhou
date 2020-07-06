@@ -1,5 +1,4 @@
 # Copyright (C) 2018 - 2020 MrYacha.
-# Copyright (C) 2020 Jeepeo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -15,27 +14,3 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # This file is part of Sophie.
-
-import asyncio
-
-from aiocache import Cache
-
-from sophie.utils.config import config
-from sophie.utils.logging import log
-from .mode import mode_kwargs, mode
-from .serializer import serializer
-
-namespace = config.cache.namespace
-
-cache = Cache(
-    cache_class=mode,
-    namespace=namespace,
-    serializer=serializer(),
-    **mode_kwargs
-)
-
-try:
-    asyncio.ensure_future(cache.set('foo', 'bar'))
-except ConnectionRefusedError:
-    log.critical("Can't connect to the cache database! Exiting...")
-    exit(2)
