@@ -19,6 +19,8 @@ from typing import List
 from babel.core import Locale
 from flag import flag
 
+from sophie.utils.config import config
+
 from .loader import LANGUAGES
 
 
@@ -29,6 +31,15 @@ def get_languages_list() -> List[str]:
 
 def get_babel(locale_code: str) -> Locale:
     return Locale.parse(locale_code, sep='-')
+
+
+def get_language_name(locale_code: str) -> str:
+    babel = get_babel(locale_code)
+
+    if config.localization.languages_names_in_english:
+        return babel.english_name
+    else:
+        return babel.display_name
 
 
 def get_language_emoji(locale_code: str) -> str:
