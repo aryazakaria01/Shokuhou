@@ -47,7 +47,7 @@ def check_pip_requirement(requirement: str) -> None:
         exit(5)
 
 
-def check_requirements(f):
+def check_requirements(f) -> bool:
     from sophie.components import LOADED_COMPONENTS
 
     for requirement in f.readlines():
@@ -117,7 +117,7 @@ def load_component(component_name: str) -> bool:
     return True
 
 
-def load_module(module):
+def load_module(module) -> None:
     from sophie.modules import LOADED_MODULES
     from sophie.services.aiogram import dp
 
@@ -149,7 +149,7 @@ def load_module(module):
     LOADED_MODULES[module['name']] = new
 
 
-def load_modules(to_load: list):
+def load_modules(to_load: list) -> 'module':
     base_path = 'sophie/modules/'
 
     for module_name in to_load:
@@ -160,8 +160,10 @@ def load_modules(to_load: list):
 
         load_module(module)
 
+    return module
 
-def load_all_modules():
+
+def load_all_modules() -> list:
     from sophie.modules import ALL_MODULES
 
     load = config.modules.load
@@ -175,6 +177,8 @@ def load_all_modules():
     to_load = [x for x in to_load if x not in dont_load]
     log.info("Modules to load: %s", str(to_load))
     load_modules(to_load)
+
+    return to_load
 
 
 async def before_srv_task(modules):
