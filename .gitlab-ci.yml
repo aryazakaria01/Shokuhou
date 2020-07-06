@@ -80,9 +80,10 @@ docker_version:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" registry.gitlab.com
   script:
     - VERSION_FULL=$(python3 -c "import sophie.version as version; print(version.version)")
-    - VERSION_MAJOR=$(echo $VERSION_FULL | sed 's/-.*//')
-    - VERSION_MINOR=$(echo $VERSION_MAJOR | sed 's/\..*//')
-    - TAGS="$VERSION_FULL $VERSION_MAJOR $VERSION_MINOR"
+    - VERSION_PATHVERSION=$(echo $VERSION_FULL | sed 's/.*-//')
+    - VERSION_MAJOR_MINOR=$(echo $VERSION_FULL | sed 's/-.*//')
+    - VERSION_MAJOR=$(echo $VERSION_MAJOR | sed 's/\..*//')
+    - TAGS="$VERSION_FULL $VERSION_MAJOR_MINOR $VERSION_MAJOR"
 
     - for tag in $TAGS; do
         DOCKER_IMAGE="$CI_REGISTRY_IMAGE:$tag";
