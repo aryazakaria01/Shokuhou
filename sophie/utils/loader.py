@@ -122,10 +122,12 @@ def load_module(module) -> None:
     from sophie.services.aiogram import dp
 
     # Stage 1 - check requirements and load components
-    with open(f"{module['path']}/requirements.txt") as f:
-        log.debug(f"Checking requirements for {module['name']} module...")
-        check_requirements(f)
-        log.debug("...Passed!")
+    requirements_file_path = f"{module['path']}/requirements.txt"
+    if os.path.exists(requirements_file_path):
+        with open(requirements_file_path) as f:
+            log.debug(f"Checking requirements for {module['name']} module...")
+            check_requirements(f)
+            log.debug("...Passed!")
 
     log.debug(f"Importing <d><n>{module['name']}</></>")
     imported_module = import_module(f"sophie.modules.{module['name']}")
