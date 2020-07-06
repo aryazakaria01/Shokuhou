@@ -17,7 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from motor.motor_asyncio import AsyncIOMotorClient
+
 from pymongo import MongoClient
+from pymongo.database import Database
 from pymongo.errors import ServerSelectionTimeoutError
 
 from sophie.utils.config import config
@@ -28,11 +30,11 @@ MONGO_DB = config.mongo.namespace
 
 # Init MongoDB
 mongo_client = MongoClient(MONGO_URI)
-sync_mongo = mongo_client[MONGO_DB]
+sync_mongo: Database = mongo_client[MONGO_DB]
 
 # Async mongo
 motor = AsyncIOMotorClient(MONGO_URI)
-mongo = motor[MONGO_DB]
+mongo: Database = motor[MONGO_DB]
 
 try:
     mongo_client.server_info()

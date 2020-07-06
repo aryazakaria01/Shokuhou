@@ -90,8 +90,3 @@ class FormatListText:
     def __delitem__(self, key) -> None:
         """Deletes item"""
         del self.data_dict[key]
-
-
-
-
-
