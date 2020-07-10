@@ -17,7 +17,7 @@
 # This file is part of Sophie.
 #
 
-from pydantic import BaseSettings, BaseModel, ValidationError, Field
+from pydantic import BaseSettings, ValidationError, Field
 from sophie.utils.logging import log
 
 # Inlcude config structures

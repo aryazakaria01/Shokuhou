@@ -15,8 +15,6 @@
 #
 # This file is part of Sophie.
 
-from functools import wraps
-
 from babel.core import Locale
 
 from .locale import get_chat_locale
