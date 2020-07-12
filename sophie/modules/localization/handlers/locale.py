@@ -32,4 +32,3 @@ class GetLanguageMenu(MessageHandler):
 
         text = strings.get('current_lang', emoji=strings.emoji, language=get_language_name(strings.code))
         await self.event.reply(text)
-

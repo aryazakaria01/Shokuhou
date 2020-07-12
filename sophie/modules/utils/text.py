@@ -57,7 +57,6 @@ class FormatListText:
             text = self.loop(value, text, space)
         return text
 
-
     def build_dict_text(self, data: dict, text='', space='') -> str:
         for key, value in data.items():
             text += '\n'
@@ -73,14 +72,13 @@ class FormatListText:
             text += space
             text += f"- {tuple_item[0]} {self.tuple_delimiter}"
 
-            for id, values in enumerate(tuple_item[1].items()):
+            for num, values in enumerate(tuple_item[1].items()):
                 title, value = values
-                if id != 0:
+                if num != 0:
                     text += ','
                 text += f' {str(title)}: {str(value)}'
 
         return text
-
 
     def loop(self, value, text="", space=space) -> str:
         if isinstance(value, dict):
@@ -121,4 +119,3 @@ class FormatListText:
     def __delitem__(self, key) -> None:
         """Deletes item"""
         del self.data[key]
-

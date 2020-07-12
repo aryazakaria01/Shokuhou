@@ -18,6 +18,7 @@
 import asyncio
 import html
 
+
 async def term(command):
     process = await asyncio.create_subprocess_shell(
         command,

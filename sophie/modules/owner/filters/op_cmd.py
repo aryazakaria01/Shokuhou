@@ -42,4 +42,3 @@ class IsOPCmd(BaseFilter):
 
 
 router.message.bind_filter(IsOPCmd)
-

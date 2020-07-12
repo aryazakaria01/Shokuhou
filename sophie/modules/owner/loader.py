@@ -35,12 +35,12 @@ async def __setup__():
 
             functions = [f for f in dir(class_object) if not f.startswith('_')]
             for function in functions:
-                #log.debug(f"Loading {function} under {module['name']} module...")
+                # log.debug(f"Loading {function} under {module['name']} module...")
                 module = getattr(class_object, function)
                 filters = {}
 
                 # Check if function is owner-only
-                if hasattr(module, 'only_owner') and getattr(module, 'only_owner') is True:
+                if hasattr(module, 'only_owner') and module.only_owner is True:
                     filters['is_owner'] = True
                 else:
                     filters['is_op'] = True
@@ -53,5 +53,4 @@ async def __setup__():
             log.debug(f"Not found owners function for {module['name']} module, skipping...")
             continue
 
-    log.debug(f"...Done")
-
+    log.debug("...Done")
