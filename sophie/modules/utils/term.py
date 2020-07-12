@@ -25,7 +25,7 @@ async def term(command):
         stderr=asyncio.subprocess.PIPE
     )
     stdout, stderr = await process.communicate()
-    stdout = str(stdout.decode().strip())
-    stderr = str(stderr.decode().strip())
+    stdout = html.escape(str(stdout.decode().strip()))
+    stderr = html.escape(str(stderr.decode().strip()))
 
     return stdout, stderr
