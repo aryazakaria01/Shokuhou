@@ -17,12 +17,13 @@
 # This file is part of Sophie.
 
 import os
+from typing import Union
 
 from sophie.utils.logging import log
 from .modules import load_pkg
 
 
-def load_component(component_name: str) -> dict:
+def load_component(component_name: str) -> Union[dict, bool]:
     from . import LOADED_COMPONENTS
 
     base_path = 'sophie/components/'
