@@ -15,21 +15,31 @@
 #
 # This file is part of Sophie.
 
-from aiogram.dispatcher.handler import MessageHandler
+import re
 
-from sophie.components.localization.strings import get_strings_dec
-from sophie.components.localization.lanuages import get_language_name
+from typing import Any, Dict, Union
+from aiogram.dispatcher.filters import BaseFilter
 
-from sophie.modules.utils.text import FormatListText
 from .. import router
 
 
-@router.message(commands=['lang'])
-@get_strings_dec
-class GetLanguageMenu(MessageHandler):
-    async def handle(self):
-        strings = self.data['strings']
+class IsOPCmd(BaseFilter):
+    op_cmd: str
 
-        text = strings.get('current_lang', emoji=strings.emoji, language=get_language_name(strings.code))
-        await self.event.reply(text)
+    async def __call__(self, message) -> Union[bool, Dict[str, Any]]:
+        text = message.text or message.caption
+        if not text:
+            return False
+
+        r_pattern = f'[/!]op {self.op_cmd} ?(.*)'
+        if result := re.match(r_pattern, text):
+            return {
+                'arg_raw': result.group(1),
+                'arg_list': result.group(1).split(' ')
+            }
+
+        return False
+
+
+router.message.bind_filter(IsOPCmd)
 

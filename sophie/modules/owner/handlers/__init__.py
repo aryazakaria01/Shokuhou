@@ -15,4 +15,6 @@
 #
 # This file is part of Sophie.
 
-from . import modules
+
+def __setup__():
+    pass

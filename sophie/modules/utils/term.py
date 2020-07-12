@@ -15,21 +15,17 @@
 #
 # This file is part of Sophie.
 
-from aiogram.dispatcher.handler import MessageHandler
+import asyncio
+import html
 
-from sophie.components.localization.strings import get_strings_dec
-from sophie.components.localization.lanuages import get_language_name
+async def term(command):
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    stdout = str(stdout.decode().strip())
+    stderr = str(stderr.decode().strip())
 
-from sophie.modules.utils.text import FormatListText
-from .. import router
-
-
-@router.message(commands=['lang'])
-@get_strings_dec
-class GetLanguageMenu(MessageHandler):
-    async def handle(self):
-        strings = self.data['strings']
-
-        text = strings.get('current_lang', emoji=strings.emoji, language=get_language_name(strings.code))
-        await self.event.reply(text)
-
+    return stdout, stderr

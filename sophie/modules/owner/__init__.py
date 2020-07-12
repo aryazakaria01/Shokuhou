@@ -17,9 +17,21 @@
 
 from aiogram import Router
 
+from sophie.modules.owner.handlers.owners_functions import OwnersFunctions
+
+
 router = Router()
 
 
 async def __setup__():
     from .filters import __init__ as filters
-    from .handlers import __init__ as handlers
+    from .handlers import __setup__ as handlers
+    from .loader import __setup__ as loader
+
+    handlers()
+    await loader()
+
+
+__all__ = [
+    OwnersFunctions
+]

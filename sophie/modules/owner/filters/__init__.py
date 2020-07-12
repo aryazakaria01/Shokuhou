@@ -16,3 +16,4 @@
 # This file is part of Sophie.
 
 from . import user_status
+from . import op_cmd
