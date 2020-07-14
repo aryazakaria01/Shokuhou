@@ -28,7 +28,7 @@ col_validation = {
             "required": ["chat_id", "locale_code"],
             "properties": {
                 "chat_id": {
-                    "bsonType": "int"
+                    "bsonType": "long"
                 },
                 "locale_code": {
                     "bsonType": "string",
