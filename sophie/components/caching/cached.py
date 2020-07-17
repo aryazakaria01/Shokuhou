@@ -26,10 +26,11 @@ def cached(ttl=None, key=None, noself=False):
     def wrapped(func):
         async def wrapped0(*args, **kwargs):
             ordered_kwargs = sorted(kwargs.items())
-            new_key = key
-            if not new_key:
-                new_key = (func.__module__ or "") + func.__name__
-                new_key += str(args[1:] if noself else args)
+
+            new_key = key if key else (func.__module__ or "") + func.__name__
+            new_key += str(args[1:] if noself else args)
+
+            if ordered_kwargs:
                 new_key += str(ordered_kwargs)
 
             value = await cache.get(new_key)
