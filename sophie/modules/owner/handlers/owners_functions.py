@@ -43,14 +43,18 @@ class OwnersFunctions:
     async def modules(self):
         from sophie.utils.loader import LOADED_MODULES
 
-        text_list = FormatListText([], title='Loaded modules')
+        data = []
         for module in LOADED_MODULES.values():
-            text_list.data.append((module['name'], {'ver': module['version']}))
+            args = {'ver': module['version']}
+
+            # Show database version. Reference to /sophie/utils/migrator.py
+            if 'current_db_version' in module:
+                args['db'] = module['current_db_version']
+
+            data.append((module['name'], args))
 
         # Convert list to tuple, to make FormatListText understand this as typed list
-        text_list.data = tuple(text_list.data)
-
-        await self.reply(text_list.text)
+        await self.reply(FormatListText(tuple(data), title='Loaded modules').text)
 
     async def term(self, arg_raw=None):
         cmd = arg_raw
