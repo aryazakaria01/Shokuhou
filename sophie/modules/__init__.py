@@ -19,9 +19,6 @@ import os
 
 from sophie.utils.logging import log
 
-LOADED_MODULES: dict = {}
-NOT_LOADED_MODULES: list = []
-
 
 def list_all_modules() -> list:
     modules_directory = 'sophie/modules'

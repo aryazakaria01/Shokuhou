@@ -19,8 +19,6 @@ import os
 
 from sophie.utils.logging import log
 
-LOADED_COMPONENTS: dict = {}
-
 
 def list_all_components() -> list:
     components_directory = 'sophie/components'
