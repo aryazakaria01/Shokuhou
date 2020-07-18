@@ -26,6 +26,7 @@ from sophie.modules.utils.middlewares import __setup__ as middlewares_setup
 from sophie.services.aiogram import dp, bot
 from sophie.utils.loader import load_all_modules, post_init
 from sophie.utils.logging import log
+from sophie.utils.migrator.migrator import __setup__ as migrator
 
 if config.advanced.debug:
     log.setLevel(DEBUG)
@@ -44,6 +45,11 @@ log.debug('...Done!')
 log.debug('Loading modules...')
 load_all_modules()
 log.info('Modules loaded successfully!')
+
+if config.advanced.migrator:
+    log.info("Checking database migration status...")
+    migrator()
+    log.info('...Done!')
 
 log.debug('Loading middlewares...')
 middlewares_setup()
