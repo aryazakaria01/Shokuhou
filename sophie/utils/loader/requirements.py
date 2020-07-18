@@ -78,6 +78,7 @@ def check_requirements(f) -> bool:
                     else:
                         log.critical(f'No such component: {component}')
                         exit(5)
+            continue
 
         # check pip requirement
         if not check_pip_requirement(requirement):
