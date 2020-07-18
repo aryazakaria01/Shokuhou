@@ -26,7 +26,7 @@ class OwnersFunctions:
 
     async def stats(self):
         from sophie.version import version
-        from sophie.modules import LOADED_MODULES
+        from sophie.utils.loader import LOADED_MODULES
 
         text_list = FormatListText({
             'General': {
