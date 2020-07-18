@@ -8,6 +8,7 @@ operators = [00000000]
 [advanced]
 debug = true
 uvloop = true
+log_file = false
 
 [modules]
 load = []

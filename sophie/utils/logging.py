@@ -20,6 +20,8 @@ import logging
 
 from loguru import logger
 
+from sophie.utils.config import config
+
 
 class InterceptHandler(logging.Handler):
     LEVELS_MAP = {
@@ -40,5 +42,7 @@ class InterceptHandler(logging.Handler):
 
 logging.basicConfig(handlers=[InterceptHandler()], level=logging.INFO)
 log = logging.getLogger(__name__)
-logger.add("logs/sophie.log", rotation="1 d", compression="tar.xz", backtrace=True, diagnose=True, level="INFO")
-log.info("Enabled logging intro sophie.log file.")
+
+if config.advanced.log_file:
+    logger.add("logs/sophie.log", rotation="1 d", compression="tar.xz", backtrace=True, diagnose=True, level="INFO")
+    log.info("Enabled logging intro sophie.log file.")

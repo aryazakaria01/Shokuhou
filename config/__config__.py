@@ -34,6 +34,7 @@ class AdvancedConfig(BaseModel):  # Advanced settings
     debug: bool = False
     uvloop: bool = False
     migrator: bool = True
+    log_file: bool = True
 
 
 class ModuleConfig(BaseModel):
