@@ -99,6 +99,3 @@ def migrate(loaded, latest_version):
         log.debug('...Done')
 
         set_version(loaded['name'], loaded['type'], new_version)
-
-
-

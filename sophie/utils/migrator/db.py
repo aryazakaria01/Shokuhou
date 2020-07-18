@@ -43,8 +43,8 @@ col_validation = {
 }
 
 
-def get_current_version(loaded_name: str, type: str) -> (None, str):
-    data = sync_mongo[col_name].find_one({'name': loaded_name, 'type': type})
+def get_current_version(loaded_name: str, loaded_type: str) -> (None, str):
+    data = sync_mongo[col_name].find_one({'name': loaded_name, 'type': loaded_type})
 
     if not data:
         return None
@@ -52,8 +52,12 @@ def get_current_version(loaded_name: str, type: str) -> (None, str):
     return data['version']
 
 
-def set_version(loaded_name: str, type: str, version: int) -> int:
-    sync_mongo[col_name].update_one({'name': loaded_name, 'type': type}, {'$set': {'version': version}}, upsert=True)
+def set_version(loaded_name: str, loaded_type: str, version: int) -> int:
+    sync_mongo[col_name].update_one(
+        {'name': loaded_name, 'type': loaded_type},
+        {'$set': {'version': version}},
+        upsert=True
+    )
     return version
 
 
