@@ -38,7 +38,7 @@ def load_pkg(pkg) -> dict:
             log.debug("...Passed!")
 
     log.debug(f"Importing <d><n>{pkg['name']}</></> {pkg['type']}")
-    imported_module = import_module(pkg['absolute_path'])
+    imported_module = import_module(pkg['package_path'])
 
     path = str(imported_module.__path__[0])
     with open(f'{path}/version.txt') as f:
@@ -62,7 +62,7 @@ def load_module(module_name) -> dict:
         'type': 'module',
         'name': module_name,
         'path': f'sophie/modules/{module_name}',
-        'absolute_path': f"sophie.modules.{module_name}"
+        'package_path': f"sophie.modules.{module_name}"
     })
 
     LOADED_MODULES[module_name] = module

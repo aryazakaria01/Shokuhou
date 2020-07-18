@@ -36,7 +36,7 @@ def load_component(component_name: str) -> Union[dict, bool]:
         'type': 'component',
         'name': component_name,
         'path': f'sophie/components/{component_name}',
-        'absolute_path': f"sophie.components.{component_name}"
+        'package_path': f"sophie.components.{component_name}"
     })
 
     LOADED_COMPONENTS[component_name] = component
