@@ -17,12 +17,49 @@
 # This file is part of Sophie.
 #
 
-from pydantic import BaseSettings, ValidationError, Field
+import os
+from typing import List
+
+import toml
+from pydantic import BaseSettings, ValidationError, Field, BaseModel
 from sophie.utils.logging import log
 
 # Inlcude config structures
-from config.__config__ import GeneralConfig, AdvancedConfig, ModuleConfig, MongoConfig, general_config
 from sophie.components.__config__ import CacheConfig, PyrogramConfig, LocalizationConfig, component_config
+
+
+class GeneralConfig(BaseModel):
+    token: str
+    owner_id: int
+    operators: List[int] = []
+
+
+class AdvancedConfig(BaseModel):  # Advanced settings
+    debug: bool = False
+    uvloop: bool = False
+    migrator: bool = True
+    log_file: bool = True
+
+
+class ModuleConfig(BaseModel):
+    load: List[str] = ['owner']
+    dont_load: List[str] = []
+
+
+class MongoConfig(BaseModel):  # settings for database
+    url: str = 'localhost'
+    namespace: str = 'sophie'
+
+
+def general_config() -> dict:  # method to load general config.toml
+    __config__ = 'config/config.toml'
+
+    if os.name == 'nt':
+        __config__.replace('/', '\\')
+
+    with open(__config__) as conf:
+        conf = toml.load(conf)
+    return conf
 
 
 class Conf(BaseSettings):
@@ -38,7 +75,7 @@ class Conf(BaseSettings):
 
 
 # loading configuration
-payload = {**general_config, **component_config}
+payload = {**general_config(), **component_config}
 try:
     config: Conf = Conf(**payload)
 except ValidationError as error:
