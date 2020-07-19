@@ -16,14 +16,16 @@
 #
 # This file is part of Sophie.
 
+from typing import Dict
+
 from .loader import post_init
 from .modules import load_all_modules
 
 
-LOADED_MODULES = {}
-LOADED_COMPONENTS = {}
+LOADED_MODULES: Dict[str, dict] = {}
+LOADED_COMPONENTS: Dict[str, dict] = {}
 
 __all__ = [
-    post_init,
-    load_all_modules
+    "post_init",
+    "load_all_modules"
 ]

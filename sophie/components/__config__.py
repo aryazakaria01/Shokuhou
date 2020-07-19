@@ -48,8 +48,8 @@ class LocalizationConfig(BaseModel):
 
 
 class PyrogramConfig(BaseModel):  # Settings for component 'Pyrogram'
-    app_id: int = None
-    app_hash: str = None
+    app_id: Optional[int] = None
+    app_hash: Optional[str] = None
 
 
 def __conf__() -> dict:

@@ -15,7 +15,7 @@
 #
 # This file is part of Sophie.
 
-from typing import Any
+from typing import Any, Union
 
 
 class FormatListText:
@@ -24,7 +24,7 @@ class FormatListText:
     space = ' '
 
     def __init__(self,
-                 data: (list, tuple, dict),
+                 data: Union[list, tuple, dict],
                  sub_titles_bold=True,
                  title=None,
                  titles_bold=True,

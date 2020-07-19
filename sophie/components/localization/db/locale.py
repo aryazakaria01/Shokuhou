@@ -16,6 +16,7 @@
 # This file is part of Sophie.
 
 from pymongo import ASCENDING
+from typing import Optional
 
 from sophie.services.mongo import mongo, sync_mongo
 from sophie.utils.logging import log
@@ -50,7 +51,7 @@ async def set_lang(chat_id: int, locale_code: str) -> dict:
     return data
 
 
-async def get_lang(chat_id: int) -> (str, None):
+async def get_lang(chat_id: int) -> Optional[str]:
     data = await mongo[col_name].find_one({'chat_id': chat_id})
     if not data:
         return None
@@ -59,7 +60,7 @@ async def get_lang(chat_id: int) -> (str, None):
 
 
 def __setup__():
-    if col_name not in sync_mongo.collection_names():
+    if col_name not in sync_mongo.list_collection_names():
         log.info(f'Created not exited column "{col_name}"')
         sync_mongo.create_collection(col_name)
 

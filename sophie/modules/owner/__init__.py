@@ -33,5 +33,5 @@ async def __setup__():
 
 
 __all__ = [
-    OwnersFunctions
+    "OwnersFunctions"
 ]

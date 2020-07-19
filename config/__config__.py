@@ -20,14 +20,14 @@
 import os
 import toml
 
-from typing import Optional, List
+from typing import List
 from pydantic import BaseModel
 
 
 class GeneralConfig(BaseModel):
     token: str
     owner_id: int
-    operators: Optional[List[int]] = []
+    operators: List[int] = []
 
 
 class AdvancedConfig(BaseModel):  # Advanced settings

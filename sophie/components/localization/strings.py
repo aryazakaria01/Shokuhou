@@ -16,6 +16,7 @@
 # This file is part of Sophie.
 
 from babel.core import Locale
+from typing import Union
 
 from .locale import get_chat_locale
 from .lanuages import get_babel, get_language_emoji
@@ -82,7 +83,7 @@ class Strings:
     def emoji(self) -> str:
         return get_language_emoji(self.locale_code)
 
-    def __getitem__(self, key) -> (str, dict, str):
+    def __getitem__(self, key) -> Union[str, dict]:
         return self._get_string(key)
 
 
