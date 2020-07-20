@@ -16,8 +16,7 @@
 # This file is part of Sophie.
 
 import os
-
-from sophie.utils.logging import log
+import logging as log
 
 
 def list_all_components() -> list:

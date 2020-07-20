@@ -18,11 +18,11 @@
 #
 
 import os
-from typing import List
+import logging as log
+from typing import List, MutableMapping
 
 import toml
 from pydantic import BaseSettings, ValidationError, Field, BaseModel
-from sophie.utils.logging import log
 
 # Inlcude config structures
 from sophie.components.__config__ import CacheConfig, PyrogramConfig, LocalizationConfig, component_config
@@ -51,14 +51,14 @@ class MongoConfig(BaseModel):  # settings for database
     namespace: str = 'sophie'
 
 
-def general_config() -> dict:  # method to load general config.toml
+def general_config() -> MutableMapping[str, dict]:  # method to load general config.toml
     __config__ = 'config/config.toml'
 
     if os.name == 'nt':
         __config__.replace('/', '\\')
 
-    with open(__config__) as conf:
-        conf = toml.load(conf)
+    with open(__config__) as file:
+        conf = toml.load(file)
     return conf
 
 

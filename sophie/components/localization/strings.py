@@ -16,7 +16,9 @@
 # This file is part of Sophie.
 
 from babel.core import Locale
-from typing import Union
+from typing import Union, TypeVar, Any, Dict, cast, Callable
+
+from aiogram.dispatcher.handler import MessageHandler
 
 from .locale import get_chat_locale
 from .lanuages import get_babel, get_language_emoji
@@ -29,13 +31,13 @@ class GetStrings:
         self.modules = LOADED_MODULES
         self.module = module
 
-    def get_by_locale_name(self, locale_code: str):
+    def get_by_locale_name(self, locale_code: str) -> Dict[str, str]:
         if locale_code not in self.modules[self.module]['translations']:
             locale_code = 'en-US'
 
         return self.modules[self.module]['translations'][locale_code]
 
-    async def get_by_chat_id(self, chat_id: int):
+    async def get_by_chat_id(self, chat_id: int) -> Dict[str, str]:
         locale_name = await get_chat_locale(chat_id)
         return self.get_by_locale_name(locale_name)
 
@@ -45,11 +47,11 @@ class GetString:
         self.module = module
         self.key = key
 
-    def get_by_locale_name(self, locale_code: str):
-        strings = GetStrings(self.module)[locale_code]
+    def get_by_locale_name(self, locale_code: str) -> str:
+        strings = GetStrings(self.module)[locale_code]  # type: ignore
         return strings
 
-    async def get_by_chat_id(self, chat_id: int):
+    async def get_by_chat_id(self, chat_id: int) -> str:
         locale_code = await get_chat_locale(chat_id)
         return self.get_by_locale_name(locale_code)
 
@@ -63,10 +65,10 @@ class Strings:
         self.locale_code = locale_code
         self.strings = GetStrings(module).get_by_locale_name(locale_code)
 
-    def _get_string(self, key) -> str:
+    def _get_string(self, key: str) -> str:
         return self.strings[key]
 
-    def get(self, key, **kwargs) -> str:
+    def get(self, key: str, **kwargs: Any) -> str:
         string = self._get_string(key)
         string = string.format(**kwargs)
         return string
@@ -83,17 +85,19 @@ class Strings:
     def emoji(self) -> str:
         return get_language_emoji(self.locale_code)
 
-    def __getitem__(self, key) -> Union[str, dict]:
+    def __getitem__(self, key: str) -> Union[str, dict]:
         return self._get_string(key)
 
 
-def get_strings_dec(func):
-    async def decorated(event, *args, **kwargs):
+T = TypeVar("T", bound=Callable[..., Any])
+
+
+def get_strings_dec(func: T) -> T:
+    async def decorated(event: MessageHandler, *args: Any, **kwargs: Any) -> Any:
         module_name = func.__module__.split('.')[2]
 
         chat_id = event.chat.id
         strings = Strings(await get_chat_locale(chat_id), module_name)
 
         return await func(event, *args, strings=strings, **kwargs)
-
-    return decorated
+    return cast(T, decorated)

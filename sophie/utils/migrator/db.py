@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Optional, Any
 from pymongo import ASCENDING
 
 from sophie.services.mongo import sync_mongo
@@ -43,7 +44,7 @@ col_validation = {
 }
 
 
-def get_current_version(loaded_name: str, loaded_type: str) -> (None, str):
+def get_current_version(loaded_name: str, loaded_type: str) -> Optional[str]:
     data = sync_mongo[col_name].find_one({'name': loaded_name, 'type': loaded_type})
 
     if not data:
@@ -61,7 +62,7 @@ def set_version(loaded_name: str, loaded_type: str, version: int) -> int:
     return version
 
 
-def __setup__():
+def __setup__() -> Any:
     if col_name not in sync_mongo.list_collection_names():
         log.info(f'Created not exited column "{col_name}"')
         sync_mongo.create_collection(col_name)

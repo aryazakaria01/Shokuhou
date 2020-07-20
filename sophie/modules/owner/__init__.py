@@ -16,22 +16,25 @@
 # This file is part of Sophie.
 
 from aiogram import Router
+from typing import Any
 
-from sophie.modules.owner.handlers.owners_functions import OwnersFunctions
+from sophie.modules.owner.handlers.owners_functions import OwnersFunctions  # type: ignore
 
 
 router = Router()
 
 
-async def __setup__():
-    from .filters import __init__ as filters
+async def __setup__() -> Any:
+    from .filters import __setup__ as filters
     from .handlers import __setup__ as handlers
     from .loader import __setup__ as loader
 
+    filters(router)
     handlers()
     await loader()
 
 
 __all__ = [
-    "OwnersFunctions"
+    "OwnersFunctions",
+    "router"
 ]

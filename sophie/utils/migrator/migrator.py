@@ -17,6 +17,7 @@
 
 import os.path
 
+from typing import Any, Optional
 from importlib import import_module
 
 from sophie.utils.logging import log
@@ -33,7 +34,7 @@ typed_loaded = {
 }
 
 
-def __setup__():
+def __setup__() -> Any:
     setup_db()
 
     for loaded in [*LOADED_MODULES.values(), *LOADED_COMPONENTS.values()]:
@@ -44,10 +45,10 @@ def __setup__():
         set_current_version(loaded)
 
 
-def set_latest_version(loaded) -> (None, int):
+def set_latest_version(loaded: dict) -> Optional[int]:
     if not os.path.exists(loaded['path'] + '/migrate'):
         log.debug(f"Not found migrate dir for {loaded['name']}, skipping.")
-        return
+        return None
 
     version_file_path = loaded['path'] + '/migrate/version.txt'
 
@@ -63,13 +64,13 @@ def set_latest_version(loaded) -> (None, int):
     return latest_version
 
 
-def set_current_version(loaded) -> (None, int):
+def set_current_version(loaded: dict) -> Optional[str]:
     current_version = get_current_version(loaded['name'], loaded['type'])
     typed_loaded[loaded['type']][loaded['name']]['current_db_version'] = current_version
     return current_version
 
 
-def migrate(loaded, latest_version):
+def migrate(loaded: dict, latest_version: Optional[int]) -> Any:
     # Check if loaded was never migrated before
     if get_current_version(loaded['name'], loaded['type']) is None:
         log.info(f"Database version is not set for {loaded['name']} {loaded['type']}, setting it...")

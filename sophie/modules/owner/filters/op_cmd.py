@@ -18,15 +18,16 @@
 import re
 
 from typing import Any, Dict, Union
-from aiogram.dispatcher.filters import BaseFilter
 
-from .. import router
+from aiogram import Router
+from aiogram.api.types import Message
+from aiogram.dispatcher.filters import BaseFilter
 
 
 class IsOPCmd(BaseFilter):
     op_cmd: str
 
-    async def __call__(self, message) -> Union[bool, Dict[str, Any]]:
+    async def __call__(self, message: Message) -> Union[bool, Dict[str, Any]]:
         text = message.text or message.caption
         if not text:
             return False
@@ -41,4 +42,5 @@ class IsOPCmd(BaseFilter):
         return False
 
 
-router.message.bind_filter(IsOPCmd)
+def __setup__(dp: Router) -> Any:
+    dp.message.bind_filter(IsOPCmd)

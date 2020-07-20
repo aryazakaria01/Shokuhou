@@ -15,16 +15,21 @@
 #
 # This file is part of Sophie.
 
+# type: ignore  # mess
+
+from typing import Any, Optional
+from aiogram import Router
+
 from sophie.modules.utils.text import FormatListText
 from sophie.modules.utils.term import term
 
 
 class OwnersFunctions:
-    async def __setup__(self, router):
+    async def __setup__(self, router: Router) -> None:
         # self.echo.only_owner = True
         pass
 
-    async def stats(self):
+    async def stats(self) -> Any:
         from sophie.version import version
         from sophie.utils.loader import LOADED_MODULES
 
@@ -34,13 +39,13 @@ class OwnersFunctions:
             }
         }, title='Stats')
 
-        for module in LOADED_MODULES:
+        for module in LOADED_MODULES.values():
             if getattr(module['object'], '__stats__', None):
                 text_list = module['object'].__stats__(text_list)
 
         await self.reply(text_list.text)
 
-    async def modules(self):
+    async def modules(self) -> Any:
         from sophie.utils.loader import LOADED_MODULES
 
         data = []
@@ -56,7 +61,7 @@ class OwnersFunctions:
         # Convert list to tuple, to make FormatListText understand this as typed list
         await self.reply(FormatListText(tuple(data), title='Loaded modules').text)
 
-    async def term(self, arg_raw=None):
+    async def term(self, arg_raw: Optional[str] = None) -> Any:
         cmd = arg_raw
         text_list = FormatListText({'$': '\n' + arg_raw}, title='Shell')
         stdout, stderr = await term(cmd)
