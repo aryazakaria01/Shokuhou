@@ -15,5 +15,8 @@
 #
 # This file is part of Sophie.
 
-def __setup__():
+from typing import Any
+
+
+def __setup__() -> Any:
     pass

@@ -15,6 +15,9 @@
 #
 # This file is part of Sophie.
 
+from typing import Any, Dict, Union
+
+from aiogram import Router
 from aiogram.dispatcher.filters import BaseFilter, Command
 
 
@@ -25,13 +28,13 @@ class CmdFilter(BaseFilter):
     commands_ignore_case: bool = False
     commands_ignore_mention: bool = False
 
-    def __call__(self, *args, **kwargs):
+    async def __call__(self, *args: Any, **kwargs: Any) -> Union[bool, Dict[str, Any]]:
         self.commands = self.cmds
-        return Command.__call__(*args, **kwargs)
+        return await Command.__call__(*args, **kwargs)
 
     parse_command = Command.parse_command
 
 
-def __setup__(dp):
+def __setup__(dp: Router) -> Any:
     # dp.message.bind_filter(CmdFilter)
     pass

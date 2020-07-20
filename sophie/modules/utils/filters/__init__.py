@@ -15,10 +15,12 @@
 #
 # This file is part of Sophie.
 
+from typing import Any
+
 from sophie.services.aiogram import dp
 
 
-def __setup__():
+def __setup__() -> Any:
     from .command import __setup__ as command
 
     command(dp)
