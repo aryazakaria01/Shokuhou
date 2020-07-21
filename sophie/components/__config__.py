@@ -17,39 +17,43 @@
 # This file is part of Sophie.
 # Includes config structure
 
+# type: ignore
+
 import os
 import toml
 
 from typing import Optional, List
+
+from sophie.utils.config import Field
 from pydantic.main import BaseModel
 
 
 class CacheConfig(BaseModel):  # settings for component 'Caching'
 
     class Redis(BaseModel):  # redis config
-        url: str = 'localhost'
-        port: int = 6379
+        url: str = Field('localhost', env='REDIS_URL')
+        port: int = Field(6379, env="REDIS_PORT")
 
     class MemCached(BaseModel):  # memcache config
-        url: str = 'localhost'
-        port: int = 11211
+        url: str = Field('localhost', env="MEMCACHE_URL")
+        port: int = Field(11211, env="MEMCACHE_PORT")
 
-    mode: str = 'memory'
-    serializer: str = 'pickle'
+    mode: str = Field("memory", env="CACHE_MODE")
+    serializer: str = Field('pickle', env="CACHE_SERIALIZER")
     redis: Redis = Redis()
     memcached: MemCached = MemCached()
-    plugins: Optional[List[str]] = None
-    namespace: str = 'Sophie'
+    plugins: Optional[List[str]] = Field(None, env="CACHE_PLUGINS")
+    namespace: str = Field('Sophie', env="CACHE_NAMESPACE")
 
 
 class LocalizationConfig(BaseModel):
-    default_language: str = 'en-US'
-    languages_names_in_english: bool = True
+    default_language: str = Field('en-US', env="DEFAULT_LANG")
+    languages_names_in_english: bool = Field(True, env="LANG_NAMES_IN_ENG")
 
 
 class PyrogramConfig(BaseModel):  # Settings for component 'Pyrogram'
-    app_id: Optional[int] = None
-    app_hash: Optional[str] = None
+    app_id: Optional[int] = Field(None, env="APP_ID")
+    app_hash: Optional[str] = Field(None, env="APP_HASH")
 
 
 def __conf__() -> dict:
