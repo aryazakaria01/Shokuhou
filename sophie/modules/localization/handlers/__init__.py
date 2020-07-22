@@ -15,4 +15,8 @@
 #
 # This file is part of Sophie.
 
-from . import locale
+from typing import Any
+
+
+def __setup__() -> Any:
+    from . import locale

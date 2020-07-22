@@ -17,11 +17,12 @@
 # This file is part of Sophie.
 
 import asyncio
+from typing import Any, ValuesView
 
 from sophie.utils.logging import log
 
 
-async def before_srv_task(modules):
+async def before_srv_task(modules: ValuesView[dict]) -> Any:
     log.debug("Running __setup__...")
     for module in [m for m in modules if hasattr(m['object'], '__setup__')]:
         log.debug(f"Running __setup__ for: {module['name']}")
@@ -33,7 +34,7 @@ async def before_srv_task(modules):
         await module['object'].__before_serving__()
 
 
-def post_init():
+def post_init() -> Any:
     from . import LOADED_MODULES
     from . import LOADED_COMPONENTS
 

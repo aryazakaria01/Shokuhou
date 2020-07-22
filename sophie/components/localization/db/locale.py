@@ -16,7 +16,7 @@
 # This file is part of Sophie.
 
 from pymongo import ASCENDING
-from typing import Optional
+from typing import Optional, Any
 
 from sophie.services.mongo import mongo, sync_mongo
 from sophie.utils.logging import log
@@ -59,7 +59,7 @@ async def get_lang(chat_id: int) -> Optional[str]:
     return data['locale_code']
 
 
-def __setup__():
+def __setup__() -> Any:
     if col_name not in sync_mongo.list_collection_names():
         log.info(f'Created not exited column "{col_name}"')
         sync_mongo.create_collection(col_name)

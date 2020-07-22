@@ -21,7 +21,7 @@ from .db.locale import get_lang, set_lang
 
 
 @cached()
-async def get_chat_locale(chat_id) -> str:
+async def get_chat_locale(chat_id: int) -> str:
     lang = await get_lang(chat_id)
     if not lang:
         return config.localization.default_language
@@ -29,5 +29,5 @@ async def get_chat_locale(chat_id) -> str:
     return lang
 
 
-async def set_chat_locale(chat_id, locale_code) -> dict:
+async def set_chat_locale(chat_id: int, locale_code: str) -> dict:
     return await set_lang(chat_id, locale_code)

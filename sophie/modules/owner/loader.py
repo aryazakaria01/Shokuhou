@@ -15,11 +15,13 @@
 #
 # This file is part of Sophie.
 
+from typing import Any
+
 from sophie.utils.logging import log
 from . import router
 
 
-async def __setup__():
+async def __setup__() -> Any:
     from sophie.utils.loader import LOADED_MODULES
 
     log.debug('Loading owners functions...')
@@ -40,14 +42,14 @@ async def __setup__():
                 filters = {}
 
                 # Check if function is owner-only
-                if hasattr(module, 'only_owner') and module.only_owner is True:
+                if hasattr(module, 'only_owner') and module.only_owner is True:  # type: ignore
                     filters['is_owner'] = True
                 else:
                     filters['is_op'] = True
 
-                filters['op_cmd'] = function
+                filters['op_cmd'] = function  # type: ignore
 
-                router.message.register(module, **filters)
+                router.message.register(module, **filters)  # type: ignore
                 log.debug('..Done')
         else:
             log.debug(f"Not found owners function for {module['name']} module, skipping...")

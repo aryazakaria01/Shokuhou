@@ -31,13 +31,15 @@ def load_component(component_name: str) -> Union[dict, bool]:
     if not os.path.exists(base_path + component_name):
         return False
 
-    log.debug(f'Loading component: {component_name}')
-    component = load_pkg({
-        'type': 'component',
-        'name': component_name,
-        'path': f'sophie/components/{component_name}',
-        'package_path': f"sophie.components.{component_name}"
-    })
+    log.debug(f"Loading component: {component_name}")
+    component = load_pkg(
+        {
+            "type": "component",
+            "name": component_name,
+            "path": f"sophie/components/{component_name}",
+            "package_path": f"sophie.components.{component_name}",
+        }
+    )
 
     LOADED_COMPONENTS[component_name] = component
     return component

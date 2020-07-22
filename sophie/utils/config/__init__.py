@@ -20,6 +20,4 @@
 from .field import Field
 from .config import config
 
-__all__ = [
-    "Field"
-]
+__all__ = ["Field", "config"]

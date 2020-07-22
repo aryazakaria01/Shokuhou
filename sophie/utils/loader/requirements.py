@@ -18,6 +18,7 @@
 
 import pkg_resources
 
+from typing import TextIO
 from sophie.utils.logging import log
 
 
@@ -26,9 +27,10 @@ def check_pip_requirement(requirement: str) -> bool:
         pkg_resources.require(requirement)
 
     except pkg_resources.DistributionNotFound as error:
-        if (application := error.requirers_str) == 'the application':
-            application = 'Sophie'  # Ofc sophie
-        log.warning(f'No satisfied requirement "{error.req}" required by {application}')
+
+        if (application := error.requirers_str) == "the application":  # type: ignore
+            application = "Sophie"  # Ofc sophie
+        log.warning(f'No satisfied requirement "{error.req}" required by {application}')  # type: ignore
         return False
 
     except pkg_resources.ContextualVersionConflict as error:
@@ -36,13 +38,13 @@ def check_pip_requirement(requirement: str) -> bool:
         return False
 
     except pkg_resources.VersionConflict as error:
-        log.critical(f'{error.dist} is installed but require {error.req}')
+        log.critical(f"{error.dist} is installed but require {error.req}")
         return False
 
     return True
 
 
-def check_requirements(f) -> bool:
+def check_requirements(f: TextIO) -> bool:
     from .components import load_component
     from . import LOADED_COMPONENTS
 

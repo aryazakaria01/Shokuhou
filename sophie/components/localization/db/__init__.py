@@ -15,8 +15,10 @@
 #
 # This file is part of Sophie.
 
+from typing import Any
 
-def __setup__():
+
+def __setup__() -> Any:
     from .locale import __setup__ as locale
 
     locale()

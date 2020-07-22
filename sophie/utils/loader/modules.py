@@ -19,6 +19,7 @@
 import os
 
 from importlib import import_module
+from typing import List
 
 from sophie.utils.logging import log
 from sophie.utils.config import config
@@ -26,7 +27,7 @@ from sophie.utils.config import config
 from .requirements import check_requirements
 
 
-def load_pkg(pkg) -> dict:
+def load_pkg(pkg: dict) -> dict:
     from sophie.services.aiogram import dp
 
     # Stage 1 - check requirements and load components
@@ -40,36 +41,38 @@ def load_pkg(pkg) -> dict:
     log.debug(f"Importing <d><n>{pkg['name']}</></> {pkg['type']}")
     imported_module = import_module(pkg['package_path'])
 
-    path = str(imported_module.__path__[0])
-    with open(f'{path}/version.txt') as f:
+    path = str(imported_module.__path__[0])  # type: ignore  # mypy issue #1422
+    with open(f"{path}/version.txt") as f:
         version = f.read()
 
     pkg['object'] = imported_module
     pkg['version'] = version
 
-    if hasattr(imported_module, 'router'):
+    if hasattr(imported_module, "router"):
         log.debug(f"Enabling router for {pkg['name']} {pkg['type']}")
-        dp.include_router(imported_module.router)
-        pkg['router'] = imported_module.router
+        dp.include_router(imported_module.router)  # type: ignore
+        pkg['router'] = imported_module.router  # type: ignore
 
     return pkg
 
 
-def load_module(module_name) -> dict:
+def load_module(module_name: str) -> dict:
     from . import LOADED_MODULES
 
-    module = load_pkg({
-        'type': 'module',
-        'name': module_name,
-        'path': f'sophie/modules/{module_name}',
-        'package_path': f"sophie.modules.{module_name}"
-    })
+    module = load_pkg(
+        {
+            "type": "module",
+            "name": module_name,
+            "path": f"sophie/modules/{module_name}",
+            "package_path": f"sophie.modules.{module_name}",
+        }
+    )
 
     LOADED_MODULES[module_name] = module
     return module
 
 
-def load_modules(to_load: list) -> list:
+def load_modules(to_load: List[str]) -> list:
     modules = []
     for module_name in to_load:
         modules.append(load_module(module_name))

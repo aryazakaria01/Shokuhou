@@ -45,6 +45,4 @@ except ValidationError as error:
     log.error(f'Something went wrong when loading config \n {str(error)}')
     exit(5)
 
-__all__ = [
-    "config"
-]
+__all__ = ["config"]

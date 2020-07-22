@@ -15,6 +15,8 @@
 #
 # This file is part of Sophie.
 
+from typing import Any
+
 from aiogram.dispatcher.handler import MessageHandler
 
 from sophie.components.localization.strings import get_strings_dec
@@ -24,10 +26,10 @@ from sophie.modules.utils.text import FormatListText
 from .. import router
 
 
-@router.message(commands=['lang'])
+@router.message(commands=['lang'])  # type: ignore
 @get_strings_dec
 class GetLanguageMenu(MessageHandler):
-    async def handle(self):
+    async def handle(self) -> Any:
         strings = self.data['strings']
 
         text = strings.get('current_lang', emoji=strings.emoji, language=get_language_name(strings.code))

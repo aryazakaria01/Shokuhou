@@ -18,6 +18,9 @@
 
 import logging
 
+from logging import LogRecord
+from typing import Any
+
 from loguru import logger
 
 from sophie.utils.config import config
@@ -32,10 +35,10 @@ class InterceptHandler(logging.Handler):
         logging.DEBUG: "DEBUG"
     }
 
-    def _get_level(self, record):
+    def _get_level(self, record: LogRecord) -> Any:
         return self.LEVELS_MAP.get(record.levelno, record.levelno)
 
-    def emit(self, record):
+    def emit(self, record: LogRecord) -> Any:
         logger_opt = logger.opt(depth=6, exception=record.exc_info, ansi=True, lazy=True)
         logger_opt.log(self._get_level(record), record.getMessage())
 

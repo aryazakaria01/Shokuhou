@@ -15,10 +15,13 @@
 #
 # This file is part of Sophie.
 
+from typing import Any
 from aiogram import Router
 
 router = Router()
 
 
-async def __setup__():
-    from .handlers import __init__
+async def __setup__() -> Any:
+    from .handlers import __setup__ as handlers
+
+    handlers()

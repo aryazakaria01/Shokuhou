@@ -25,30 +25,28 @@ class FormatListText:
 
     def __init__(self,
                  data: Union[list, tuple, dict],
-                 sub_titles_bold=True,
-                 title=None,
-                 titles_bold=True,
-                 tuple_delimiter='->'
-                 ) -> None:
+                 sub_titles_bold: bool = True,
+                 title: str = '',
+                 titles_bold: bool = True,
+                 tuple_delimiter: str = '->'
+                 ):
         self.data = data
         self.sub_titles_bold = sub_titles_bold
         self.title_text = title
         self.titles_bold = titles_bold
         self.tuple_delimiter = tuple_delimiter
 
-    def get_title(self, title) -> str:
+    def get_title(self, title: str) -> str:
         if self.titles_bold:
             return f'<b>{title}:</b> '
-        else:
-            return f'{title} '
+        return f'{title} '
 
-    def get_sub_title(self, sub_title) -> str:
+    def get_sub_title(self, sub_title: str) -> str:
         if self.sub_titles_bold:
             return f'<b>{sub_title}:</b> '
-        else:
-            return f'{sub_title} '
+        return f'{sub_title} '
 
-    def build_list_text(self, data: list, text='', space='') -> str:
+    def build_list_text(self, data: list, text: str = '', space: str = '') -> str:
         for value in data:
             text += '\n'
             text += space
@@ -57,7 +55,7 @@ class FormatListText:
             text = self.loop(value, text, space)
         return text
 
-    def build_dict_text(self, data: dict, text='', space='') -> str:
+    def build_dict_text(self, data: dict, text: str = '', space: str = '') -> str:
         for key, value in data.items():
             text += '\n'
             text += space
@@ -66,7 +64,7 @@ class FormatListText:
             text = self.loop(value, text, space)
         return text
 
-    def build_tuple_text(self, data: tuple, text='', space='') -> str:
+    def build_tuple_text(self, data: tuple, text: str = '', space: str = '') -> str:
         for tuple_item in data:
             text += '\n'
             text += space
@@ -80,7 +78,7 @@ class FormatListText:
 
         return text
 
-    def loop(self, value, text="", space=space) -> str:
+    def loop(self, value: Any, text: str = "", space: str = space) -> str:
         if isinstance(value, dict):
             text = self.build_dict_text(value, text, space + space)
         elif isinstance(value, list):
@@ -108,14 +106,14 @@ class FormatListText:
         text += self.loop(self.data)
         return text
 
-    def __getitem__(self, key) -> Any:
+    def __getitem__(self, key: Any) -> Any:
         """Returns data from dict"""
         return self.data[key]
 
-    def __setitem__(self, key, value) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:
         """Sets a value to data"""
-        self.data[key] = value
+        self.data[key] = value  # type: ignore
 
-    def __delitem__(self, key) -> None:
+    def __delitem__(self, key: Any) -> None:
         """Deletes item"""
-        del self.data[key]
+        del self.data[key]  # type: ignore

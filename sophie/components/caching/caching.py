@@ -18,13 +18,14 @@
 
 import asyncio
 
+from typing import Any, Tuple
 from aiocache import Cache
 
 from sophie.utils.config import config
 from sophie.utils.logging import log
 
 
-def get_mode():
+def get_mode() -> Tuple[Any, dict]:
     conf = config.cache.mode.lower()
 
     if conf == 'memory':
@@ -54,7 +55,7 @@ def get_mode():
     return mode, kwargs
 
 
-def get_serializer():
+def get_serializer() -> Any:
     conf = config.cache.serializer.lower()
     if conf == 'pickle':
         from aiocache.serializers import PickleSerializer
@@ -70,7 +71,7 @@ def get_serializer():
     return serializer
 
 
-def __setup__():
+def __setup__() -> Any:
     namespace = config.cache.namespace
 
     mode, kwargs = get_mode()
