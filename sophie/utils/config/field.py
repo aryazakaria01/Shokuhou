@@ -23,24 +23,13 @@ from typing import Any
 from pydantic.fields import FieldInfo, Undefined
 
 
-def Field(default: Any = Undefined,
-          *,
-          env: Any,
-          **extra: Any
-          ) -> FieldInfo:
-
+def Field(default: Any = Undefined, *, env: Any, **extra: Any) -> FieldInfo:
     """A hack method to include out of box env variable support in pydantic BaseModels"""
 
     if env := os.environ.get(env):
-        return FieldInfo(
-            env,
-            **extra
-        )
+        return FieldInfo(env, **extra)
 
-    return FieldInfo(
-        default,
-        **extra
-    )
+    return FieldInfo(default, **extra)
 
 
 __all__ = [
