@@ -33,6 +33,18 @@ python:flake8:
     - python3 -m flake8 sophie
 
 
+python:mypy:
+  image: python:latest
+  stage: test
+  allow_failure: true
+  before_script:
+    - pip install mypy
+  script:
+    - cd /builds/SophieBot/sophie
+    - pip install -r requirements.txt
+    - python3 -m mypy sophie
+
+
 docker_branch:
   # Builds docker image with tag same as commited branch
   image: docker:latest
