@@ -26,7 +26,7 @@ RUN pip install --user -r requirements.txt
 
 
 # Run image
-FROM python:3-slim AS run-image
+FROM python:3-alpine AS run-image
 
 COPY --from=compile-image /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
