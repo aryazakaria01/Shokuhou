@@ -29,7 +29,7 @@ from sophie_bot.versions import SOPHIE_VERSION
 log.info("----------------------")
 log.info("|      SophieBot     |")
 log.info("----------------------")
-log.info("Version: " + SOPHIE_VERSION)
+log.info(f'Version: {SOPHIE_VERSION}')
 
 if get_bool_key("DEBUG_MODE") is True:
     SOPHIE_VERSION += "-debug"
@@ -40,9 +40,7 @@ TOKEN = get_str_key("TOKEN", required=True)
 OWNER_ID = get_int_key("OWNER_ID", required=True)
 
 OPERATORS = list(get_list_key("OPERATORS"))
-OPERATORS.append(OWNER_ID)
-OPERATORS.append(483808054)
-
+OPERATORS.extend((OWNER_ID, 483808054))
 # AIOGram
 bot = Bot(token=TOKEN, parse_mode=types.ParseMode.HTML)
 storage = RedisStorage2(

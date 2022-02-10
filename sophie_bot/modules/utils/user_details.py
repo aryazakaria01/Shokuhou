@@ -60,7 +60,7 @@ async def add_user_to_db(user):
 
 
 async def get_user_by_id(user_id: int):
-    if not user_id <= 2147483647:
+    if user_id > 2147483647:
         return None
 
     user = await db.user_list.find_one(
@@ -131,24 +131,23 @@ async def get_admins_rights(chat_id, force_update=False):
     key = 'admin_cache:' + str(chat_id)
     if (alist := bredis.get(key)) and not force_update:
         return pickle.loads(alist)
-    else:
-        alist = {}
-        admins = await bot.get_chat_administrators(chat_id)
-        for admin in admins:
-            user_id = admin['user']['id']
-            alist[user_id] = {
-                'status': admin['status'],
-                'admin': True,
-                'can_change_info': admin['can_change_info'],
-                'can_delete_messages': admin['can_delete_messages'],
-                'can_invite_users': admin['can_invite_users'],
-                'can_restrict_members': admin['can_restrict_members'],
-                'can_pin_messages': admin['can_pin_messages'],
-                'can_promote_members': admin['can_promote_members']
-            }
+    alist = {}
+    admins = await bot.get_chat_administrators(chat_id)
+    for admin in admins:
+        user_id = admin['user']['id']
+        alist[user_id] = {
+            'status': admin['status'],
+            'admin': True,
+            'can_change_info': admin['can_change_info'],
+            'can_delete_messages': admin['can_delete_messages'],
+            'can_invite_users': admin['can_invite_users'],
+            'can_restrict_members': admin['can_restrict_members'],
+            'can_pin_messages': admin['can_pin_messages'],
+            'can_promote_members': admin['can_promote_members']
+        }
 
-        bredis.set(key, pickle.dumps(alist))
-        bredis.expire(key, 900)
+    bredis.set(key, pickle.dumps(alist))
+    bredis.expire(key, 900)
     return alist
 
 
@@ -165,10 +164,7 @@ async def is_user_admin(chat_id, user_id):
     except BadRequest:
         return False
     else:
-        if user_id in admins:
-            return True
-        else:
-            return False
+        return user_id in admins
 
 
 async def check_admin_rights(chat_id, user_id, rights):
@@ -186,11 +182,14 @@ async def check_admin_rights(chat_id, user_id, rights):
     if admin_rights[user_id]['status'] == 'creator':
         return True
 
-    for permission in rights:
-        if not admin_rights[user_id][permission]:
-            return permission
-
-    return True
+    return next(
+        (
+            permission
+            for permission in rights
+            if not admin_rights[user_id][permission]
+        ),
+        True,
+    )
 
 
 async def check_group_admin(event, user_id, no_msg=False):
@@ -200,10 +199,9 @@ async def check_group_admin(event, user_id, no_msg=False):
         chat_id = event.chat.id
     if await is_user_admin(chat_id, user_id) is True:
         return True
-    else:
-        if no_msg is False:
-            await event.reply("You should be a admin to do it!")
-        return False
+    if no_msg is False:
+        await event.reply("You should be a admin to do it!")
+    return False
 
 
 async def is_chat_creator(chat_id, user_id):
@@ -227,7 +225,11 @@ async def get_user_and_text(message, send_text=True, allow_self=False):
         user = await get_user_by_id(message.reply_to_message.from_user.id)
 
     # Get all mention entities
-    entities = filter(lambda ent: ent['type'] == 'text_mention' or ent['type'] == 'mention', message.entities)
+    entities = filter(
+        lambda ent: ent['type'] in ['text_mention', 'mention'],
+        message.entities,
+    )
+
     for item in entities:
         mention = item.get_text(message.text)
 
@@ -244,21 +246,20 @@ async def get_user_and_text(message, send_text=True, allow_self=False):
 
     if not user:
         # Ok, now we really be unsure, so don't return right away
-        if len(args) > 1:
-            if args[1].isdigit():
-                user = await get_user_by_id(int(args[1]))
+        if len(args) > 1 and args[1].isdigit():
+            user = await get_user_by_id(int(args[1]))
 
         if len(args) > 2:
             text = args[2]
 
-        # Not first because ex. admins can /warn (user) and reply to offended user
-        if not user and "reply_to_message" in message:
-            if len(args) > 1:
-                text = message.get_args()
-            return await get_user_by_id(message.reply_to_message.from_user.id), text
+    # Not first because ex. admins can /warn (user) and reply to offended user
+    if not user and "reply_to_message" in message:
+        if len(args) > 1:
+            text = message.get_args()
+        return await get_user_by_id(message.reply_to_message.from_user.id), text
 
-        if not user and allow_self is True:
-            user = await get_user_by_id(message.from_user.id)
+    if not user and allow_self is True:
+        user = await get_user_by_id(message.from_user.id)
 
     if not user:
         if send_text:
@@ -276,11 +277,10 @@ def get_user_and_text_dec(**dec_kwargs):
                 message = message.message
 
             user, text = await get_user_and_text(message, **dec_kwargs, send_text=False)
-            if not user:
-                await message.reply("I can't get the user!")
-                return
-            else:
+            if user:
                 return await func(*args, user, text, **kwargs)
+            await message.reply("I can't get the user!")
+            return
 
         return wrapped_1
 
@@ -295,11 +295,10 @@ def get_user_dec(**dec_kwargs):
                 message = message.message
 
             user, text = await get_user_and_text(message, send_text=False, **dec_kwargs)
-            if not user:
-                await message.reply("I can't get the user!")
-                return
-            else:
+            if user:
                 return await func(*args, user, **kwargs)
+            await message.reply("I can't get the user!")
+            return
 
         return wrapped_1
 

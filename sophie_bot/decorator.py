@@ -40,7 +40,7 @@ COMMANDS_ALIASES = {}
 log.info("Filters to load: %s", str(ALL_FILTERS))
 for module_name in ALL_FILTERS:
     log.debug("Importing " + module_name)
-    imported_module = import_module("sophie_bot.utils.filters." + module_name)
+    imported_module = import_module(f'sophie_bot.utils.filters.{module_name}')
 log.info("Filters loaded!")
 
 
@@ -101,7 +101,7 @@ def register(*args, cmds=None, f=None, allow_edited=True, allow_kwargs=False, **
                 message.conf['cmds'] = cmds
 
             if allow_kwargs is False:
-                def_kwargs = dict()
+                def_kwargs = {}
 
             with configure_scope() as scope:
                 parsed_update = parse_update(dict(message))

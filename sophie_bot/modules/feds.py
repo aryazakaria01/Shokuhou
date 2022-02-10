@@ -137,7 +137,7 @@ def get_fed_dec(func):
 
         if message.text:
             text_args = message.text.split(" ", 2)
-            if not len(text_args) < 2 and text_args[1].count('-') == 4:
+            if len(text_args) >= 2 and text_args[1].count('-') == 4:
                 if not (fed := await db.feds.find_one({'fed_id': text_args[1]})):
                     await message.reply(await get_string(real_chat_id, "feds", 'fed_id_invalid'))
                     return
@@ -160,7 +160,7 @@ def is_fed_owner(func):
         fed = args[1]
         user_id = message.from_user.id
 
-        if not user_id == fed["creator"] and user_id != OWNER_ID:
+        if user_id not in [fed["creator"], OWNER_ID]:
             text = (await get_string(message.chat.id, "feds", 'need_fed_admin')).format(name=fed['fed_name'])
             await message.reply(text)
             return
@@ -176,10 +176,11 @@ def is_fed_admin(func):
         fed = args[1]
         user_id = message.from_user.id
 
-        if not user_id == fed["creator"] and user_id != OWNER_ID:
-            if 'admins' not in fed or user_id not in fed['admins']:
-                text = (await get_string(message.chat.id, "feds", 'need_fed_admin')).format(name=fed['fed_name'])
-                return await message.reply(text)
+        if user_id not in [fed["creator"], OWNER_ID] and (
+            'admins' not in fed or user_id not in fed['admins']
+        ):
+            text = (await get_string(message.chat.id, "feds", 'need_fed_admin')).format(name=fed['fed_name'])
+            return await message.reply(text)
 
         return await func(*args, **kwargs)
 
@@ -202,7 +203,7 @@ async def new_fed(message, strings):
         await message.reply(strings['fed_name_long'])
         return
 
-    if await db.feds.find_one({'creator': user_id}) and not user_id == OWNER_ID:
+    if await db.feds.find_one({'creator': user_id}) and user_id != OWNER_ID:
         await message.reply(strings['can_only_1_fed'])
         return
 
@@ -602,16 +603,12 @@ async def fed_ban_user(message, fed, user, reason, strings):
             s_fed = await db.feds.find_one({'fed_id': s_fed_id})
             banned_chats = []
             for chat_id in s_fed['chats']:
-                if not user:
-                    continue
-
-                elif chat_id == user['user_id']:
-                    continue
-
-                elif 'chats' not in user:
-                    continue
-
-                elif chat_id not in user['chats']:
+                if (
+                    not user
+                    or chat_id == user['user_id']
+                    or 'chats' not in user
+                    or chat_id not in user['chats']
+                ):
                     continue
 
                 # Do not slow down other updates
@@ -797,7 +794,7 @@ async def fed_rename(message, fed, strings):
     if len(args) > 1 and args[0].count('-') == 4:
         new_name = ' '.join(args[1:])
     else:
-        new_name = ' '.join(args[0:])
+        new_name = ' '.join(args[:])
 
     if new_name == fed['fed_name']:
         await message.reply(strings['frename_same_name'])
@@ -937,11 +934,7 @@ async def importfbans_func(message, fed, strings, document=None):
         if 'reason' in row:
             new['reason'] = row['reason']
 
-        if 'by' in row:
-            new['by'] = row['by']
-        else:
-            new['by'] = message.from_user.id
-
+        new['by'] = row['by'] if 'by' in row else message.from_user.id
         if 'time' in row:
             new['time'] = datetime.fromtimestamp(int(row['time']))
         else:
