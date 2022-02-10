@@ -80,16 +80,19 @@ async def connect_chat_keyboard(message, strings, chat):
     text += strings['select_chat_to_connect']
     markup = InlineKeyboardMarkup(row_width=1)
 
-    if connected := await db.connections.find_one({'user_id': message.from_user.id}, {'history': {'$slice': -3}}):
-        for chat_id in reversed(connected['history']):
-            chat = await db.chat_list.find_one({'chat_id': chat_id})
-            markup.insert(InlineKeyboardButton(
-                chat['chat_title'],
-                callback_data=connect_to_chat_cb.new(chat_id=chat_id))
-            )
-    else:
+    if not (
+        connected := await db.connections.find_one(
+            {'user_id': message.from_user.id}, {'history': {'$slice': -3}}
+        )
+    ):
         return await message.reply(strings['u_wasnt_connected'])
 
+    for chat_id in reversed(connected['history']):
+        chat = await db.chat_list.find_one({'chat_id': chat_id})
+        markup.insert(InlineKeyboardButton(
+            chat['chat_title'],
+            callback_data=connect_to_chat_cb.new(chat_id=chat_id))
+        )
     await message.reply(text, reply_markup=markup)
 
 
@@ -107,13 +110,8 @@ async def connect_chat_keyboard_cb(message, callback_data=False, **kwargs):
 @get_strings_dec('connections')
 async def connect_to_chat_from_arg(message, chat, strings):
     user_id = message.from_user.id
-
-    chat_id = None
-
     arg = get_arg(message)
-    if arg.startswith('-'):
-        chat_id = int(arg)
-
+    chat_id = int(arg) if arg.startswith('-') else None
     if not chat_id:
         await message.reply(strings['cant_find_chat_use_id'])
         return

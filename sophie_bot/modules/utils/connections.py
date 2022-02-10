@@ -61,9 +61,8 @@ async def get_connected_chat(message, admin=False, only_groups=False, from_id=No
 
     # Admin rights check if admin=True
     user_admin = await is_user_admin(chat_id, user_id)
-    if admin:
-        if not user_admin:
-            return {'status': None, 'err_msg': 'u_should_be_admin'}
+    if admin and not user_admin:
+        return {'status': None, 'err_msg': 'u_should_be_admin'}
 
     # Check on /allowusersconnect enabled
     if settings := await db.chat_connection_settings.find_one({'chat_id': chat_id}):
@@ -95,11 +94,14 @@ def chat_connection(**dec_kwargs):
                 from_id = message.from_user.id
                 message = message.message
 
-            if (check := await get_connected_chat(message, from_id=from_id, **dec_kwargs))['status'] is None:
-                await message.reply(check['err_msg'])
-                return
-            else:
+            if (
+                check := await get_connected_chat(
+                    message, from_id=from_id, **dec_kwargs
+                )
+            )['status'] is not None:
                 return await func(*args, check, **kwargs)
+            await message.reply(check['err_msg'])
+            return
 
         return wrapped_1
 

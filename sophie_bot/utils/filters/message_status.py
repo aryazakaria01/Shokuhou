@@ -40,7 +40,7 @@ class NoArgs(BoundFilter):
         self.no_args = no_args
 
     async def check(self, message: types.Message):
-        if not len(message.text.split(' ')) > 1:
+        if len(message.text.split(' ')) <= 1:
             return True
 
 

@@ -40,7 +40,7 @@ class OnlyGroups(BoundFilter):
         self.only_groups = only_groups
 
     async def check(self, message: types.Message):
-        if not message.from_user.id == message.chat.id:
+        if message.from_user.id != message.chat.id:
             return True
 
 

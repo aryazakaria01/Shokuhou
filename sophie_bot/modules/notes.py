@@ -51,7 +51,7 @@ async def get_simmilar_note(chat_id, note_name):
     async for note in db.notes.find({'chat_id': chat_id}):
         all_notes.extend(note['names'])
 
-    if len(all_notes) > 0:
+    if all_notes:
         check = difflib.get_close_matches(note_name, all_notes)
         if len(check) > 0:
             return check[0]
@@ -197,7 +197,7 @@ async def get_note_cmd(message, chat, strings):
     noformat = False
     if len(args := message.text.split(note_name)) > 1:
         arg2 = args[1][1:].lower()
-        noformat = True if 'noformat' == arg2 or 'raw' == arg2 else False
+        noformat = arg2 in ['noformat', 'raw']
 
     return await get_note(
         message,
@@ -248,10 +248,13 @@ async def get_notes_list(message, chat, strings):
         all_notes = notes
         notes = []
         for note in all_notes:
-            for note_name in note['names']:
-                if re.search(request, note_name):
-                    notes.append(note)
-        if not len(notes) > 0:
+            notes.extend(
+                note
+                for note_name in note['names']
+                if re.search(request, note_name)
+            )
+
+        if not notes:
             await message.reply(strings['no_notes_pattern'] % request)
             return
 
@@ -310,7 +313,7 @@ async def clear_note(message, chat, strings):
                 continue
 
         await db.notes.delete_one({'_id': note['_id']})
-        removed += ' #' + note_name
+        removed += f' #{note_name}'
 
     if len(note_names) > 1:
         text = strings['note_removed_multiple'].format(chat_name=chat['chat_title'], removed=removed)
@@ -365,9 +368,9 @@ async def note_info(message, chat, strings):
 
     text = strings['note_info_title']
 
-    note_names = ''
-    for note_name in note['names']:
-        note_names += f" <code>#{note_name}</code>"
+    note_names = ''.join(
+        f" <code>#{note_name}</code>" for note_name in note['names']
+    )
 
     text += strings['note_info_note'] % note_names
     text += strings['note_info_content'] % ('text' if 'file' not in note else note['file']['type'])
@@ -475,10 +478,9 @@ async def clean_notes(message, chat, strings):
 
 
 async def __stats__():
-    text = "* <code>{}</code> total notes\n".format(
+    return "* <code>{}</code> total notes\n".format(
         await db.notes.count_documents({})
     )
-    return text
 
 
 async def __export__(chat_id):

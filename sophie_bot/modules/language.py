@@ -47,10 +47,10 @@ async def select_lang_keyboard(message, strings, edit=False):
 
     if message.chat.type == 'private':
         text = strings['your_lang'].format(
-            lang=lang_info['flag'] + " " + lang_info['babel'].display_name)
-        text += strings['select_pm_lang']
+            lang=f'{lang_info["flag"]} ' + lang_info['babel'].display_name
+        )
 
-    # TODO: Connected chat lang info
+        text += strings['select_pm_lang']
 
     else:
         text = strings['chat_lang'].format(
@@ -59,10 +59,15 @@ async def select_lang_keyboard(message, strings, edit=False):
 
     for lang in LANGUAGES.values():
         lang_info = lang['language_info']
-        markup.insert(InlineKeyboardButton(
-            lang_info['flag'] + " " + lang_info['babel'].display_name,
-            callback_data=select_lang_cb.new(lang=lang_info['code'], back_btn=False if edit is False else True))
+        markup.insert(
+            InlineKeyboardButton(
+                f'{lang_info["flag"]} {lang_info["babel"].display_name}',
+                callback_data=select_lang_cb.new(
+                    lang=lang_info['code'], back_btn=edit is not False
+                ),
+            )
         )
+
 
     markup.add(InlineKeyboardButton(strings['crowdin_btn'], url='https://crowdin.com/project/sophiebot'))
     if edit:
@@ -79,7 +84,10 @@ async def change_lang(message, lang, e=False, back_btn=False):
 
     lang_info = LANGUAGES[lang]['language_info']
 
-    text = strings['lang_changed'].format(lang_name=lang_info['flag'] + " " + lang_info['babel'].display_name)
+    text = strings['lang_changed'].format(
+        lang_name=f'{lang_info["flag"]} {lang_info["babel"].display_name}'
+    )
+
     text += strings['help_us_translate']
 
     markup = InlineKeyboardMarkup()
@@ -119,9 +127,7 @@ async def select_lang_callback(query, callback_data=None, **kwargs):
 
 @quart.route('/wiki/languages_loaded')
 async def languages_loaded_wiki_page():
-    text = "<h2>Loaded languages:</h2>"
-
-    text += '<ul>'
+    text = "<h2>Loaded languages:</h2>" + '<ul>'
     for language in LANGUAGES.values():
         info = language['language_info']
         text += f"\n<li>{info['flag']} {info['babel'].display_name}</li>"

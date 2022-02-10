@@ -57,11 +57,11 @@ class UserRestricting(Filter):
 
     @classmethod
     def validate(cls, full_config):
-        config = {}
-        for alias, argument in cls.ARGUMENTS.items():
-            if alias in full_config:
-                config[argument] = full_config.pop(alias)
-        return config
+        return {
+            argument: full_config.pop(alias)
+            for alias, argument in cls.ARGUMENTS.items()
+            if alias in full_config
+        }
 
     async def check(self, event):
         user_id = await self.get_target_id(event)
@@ -70,7 +70,11 @@ class UserRestricting(Filter):
         if message.chat.type == 'private':
             return True
 
-        if not (p := await check_admin_rights(message.chat.id, user_id, self.required_permissions.keys())) is True:
+        if (
+            p := await check_admin_rights(
+                message.chat.id, user_id, self.required_permissions.keys()
+            )
+        ) is not True:
             await self.no_rights_msg(event, p)
             return False
 

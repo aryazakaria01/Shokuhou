@@ -25,10 +25,8 @@ log.info('Starting updating all notes...')
 
 all_notes = mongodb.notes_v2.find({})
 all_notes_count = all_notes.count()
-counter = 0
 changed_notes = 0
-for note in all_notes:
-    counter += 1
+for counter, note in enumerate(all_notes, start=1):
     log.info(f'Updating {counter} of {all_notes_count}...')
 
     if 'name' in note:
